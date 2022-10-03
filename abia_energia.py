@@ -12,7 +12,6 @@ Podéis encontrar constantes que se corresponden al enunciado,
 como por ejemplo tipos de central o cliente, al final de este fichero.
 """
 
-
 class Centrales(list):
     """
     Vector de centrales de energía
