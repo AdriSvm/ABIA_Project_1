@@ -30,7 +30,7 @@ class Centrales(list):
         for i in range(3):
             for j in range(centrales_por_tipo[i]):
                 p = (rand.random() * PROD[i][0]) + PROD[i][1]
-                c = Central(TIPO[i], trunc(p), rand.randint(0, 100), rand.randint(0, 100))
+                c = Central(TIPO[i], trunc(p), rand.randint(0, 100), rand.randint(0, 100), False)
                 v_centrales.append(c)
         super().__init__(v_centrales)
 
@@ -113,7 +113,7 @@ class VEnergia(object):
     @staticmethod
     def tarifa_cliente_penalizacion(tipo: int) -> float:
         """
-        Retorna la penalización por servir a un cliente con
+        Retorna la penalización por no servir a un cliente con
         servicio no garantizado.
         El parámetro tipo especifica el tipo del cliente.
         Lanza una excepción si el tipo está fuera de rango.
@@ -178,14 +178,15 @@ class Central(object):
     Características de la central de energía
     """
 
-    def __init__(self, tipo: int, produccion: float, cx: int, cy: int):
+    def __init__(self, tipo: int, produccion: float, cx: int, cy: int, estado: bool):
         self.Tipo = tipo  # Tipo de central
         self.Produccion = produccion  # Producción en MW
         self.CoordX = cx  # Coordenada x
         self.CoordY = cy  # Coordenada y
+        self.Estado = estado
 
     def __repr__(self) -> str:
-        return f"Central(tipo={self.Tipo}|produccion={self.Produccion}|cx={self.CoordX}|cy={self.CoordY})"
+        return f"Central(tipo={self.Tipo}|produccion={self.Produccion}|cx={self.CoordX}|cy={self.CoordY}|estado={self.Estado})"
 
 
 class Cliente(object):
@@ -244,3 +245,11 @@ PERDIDA = [[10, 0], [25, 0.1], [50, 0.2], [75, 0.4], [1000, 0.6]]
 TIPO = [0, 1, 2]
 TIPOCL = [0, 1, 2]
 TIPOCNT = [0, 1]
+
+centrales = Centrales([5, 10, 25], 42)
+clientes = Clientes(1000, [0.2, 0.3, 0.5], 0.5, 42)
+#ganancia_0 = clientes[i].Consumo * VEnergia.tarifa_cliente_garantizada(CLIENTE_MG)
+
+#print(centrales[0], len(centrales))
+#print(clientes[0], len(clientes))
+#print(ganancia_0)
