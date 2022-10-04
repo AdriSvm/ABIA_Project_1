@@ -191,17 +191,13 @@ class StateRepresentation(object):
                 self.gains -= VEnergia.daily_cost(self.centrals[c].Tipo)
                 self.gains -= VEnergia.costs_production_mw(self.centrals[c].Tipo) * self.centrals[c].Produccion
 
-        print(self.gains)
-        return self.gains
-        '''
         p_l = 0
         for c in self.dict:
             if self.centrals[c].Estado == True:
                 p_l += power_left(c,self.dict,self.clients,self.centrals)
         ratio = p_l / len(self.centrals)
 
-        return ratio
-        '''
+        return self.gains
 
 def generate_initial_state(params: Parameters) -> StateRepresentation:
     clients = Clientes(params.n_cl,params.propc,params.propg,params.seed)
@@ -277,13 +273,13 @@ class CentralDistributionProblem(Problem):
 
 
 #initial_state = generate_initial_state(Parameters([1, 4, 5],100, [0.2, 0.3, 0.5], 0.5, 42))
-initial_state = generate_initial_state2(Parameters([5, 10, 25],1000, [0.2, 0.3, 0.5], 0.5, 42))
+initial_state = generate_initial_state(Parameters([5, 10, 25],500, [0.2, 0.3, 0.5], 0.5, 42))
 initial_gains = initial_state.heuristic()
 n = hill_climbing(CentralDistributionProblem(initial_state))
-print(n)
-print(initial_gains)
+#print(n)
+#print(initial_gains)
 
-#print(timeit.timeit(lambda: hill_climbing(CentralDistributionProblem(initial_state)), number=1))
+print(timeit.timeit(lambda: hill_climbing(CentralDistributionProblem(initial_state)), number=1))
 #print(n)
 
 
