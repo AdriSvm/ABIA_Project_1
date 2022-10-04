@@ -225,6 +225,39 @@ def generate_initial_state(params: Parameters) -> StateRepresentation:
 
     return StateRepresentation(clients,centrals,state_dict)
 
+def generate_initial_state2(params: Parameters) -> StateRepresentation:
+    clients = Clientes(params.n_cl, params.propc, params.propg, params.seed)
+    centrals = Centrales(params.n_c, params.seed)
+    state_dict = {i: set() for i in range(len(centrals))}
+
+    for c in centrals:
+        c.Estado = True
+
+    i = 0
+    n_c = len(centrals)
+    while i < len(clients):
+        placed = False
+        mx = 0
+        print(i)
+        while not placed:
+            r = random.randint(0,n_c-1)
+            if power_left(r,state_dict,clients,centrals) < clients_power(i,state_dict,clients,centrals,r):
+                mx += 1
+            else:
+                state_dict[r].add(i)
+                i += 1
+                placed = True
+        if mx >= n_c:
+            c = 0
+            while c < len(centrals):
+                if power_left(c, state_dict, clients, centrals) < clients_power(i, state_dict, clients, centrals,c):
+                     pass
+                else:
+                    state_dict[c].add(i)
+                    i += 1
+                    placed = True
+            c += 1
+    return StateRepresentation(clients, centrals, state_dict)
 
 class CentralDistributionProblem(Problem):
     def __init__(self, initial_state: StateRepresentation):
@@ -244,7 +277,7 @@ class CentralDistributionProblem(Problem):
 
 
 #initial_state = generate_initial_state(Parameters([1, 4, 5],100, [0.2, 0.3, 0.5], 0.5, 42))
-initial_state = generate_initial_state(Parameters([5, 10, 25],1000, [0.2, 0.3, 0.5], 0.5, 42))
+initial_state = generate_initial_state2(Parameters([5, 10, 25],1000, [0.2, 0.3, 0.5], 0.5, 42))
 initial_gains = initial_state.heuristic()
 n = hill_climbing(CentralDistributionProblem(initial_state))
 print(n)
