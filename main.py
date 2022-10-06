@@ -26,7 +26,13 @@ class SwapClients(Operators):
     def __repr__(self) -> str:
         return f" | Swap clients {self.cl1} from {self.cent1} and {self.cl2} from {self.cent2}"
 
+class InsertClient(Operators):
+    def __init__(self,cl:int,c:int):
+        self.cl = cl
+        self.c = c
 
+    def __repr__(self) -> str:
+        return f" | Client {self.cl} insertat a la central {self.c}"
 class SwapState(Operators):
     def __init__(self, ce:int, estate: bool):
         self.ce = ce
@@ -74,13 +80,17 @@ def power_left(central:int, dicc:dict, clients:Clientes, centrals:Centrales) -> 
 
 
 class StateRepresentation(object):
-    def __init__(self, clients:clientes, centrals:centrales, dict:dict ):
+    def __init__(self, clients:clientes, centrals:centrales, dict:dict, states:list, left:list = []):
         self.clients = clients
         self.centrals = centrals
         self.dict = dict
+        self.left = left
+        self.states = states
     def copy(self):
         new_dict = {x:self.dict[x].copy() for x in self.dict}
-        return StateRepresentation(self.clients,self.centrals,new_dict)
+        new_left = [x for x in self.left]
+        new_states = [x for x in self.states]
+        return StateRepresentation(self.clients,self.centrals,new_dict,new_states, new_left)
     def __repr__(self) -> str:
         lst = []
         for i in range(len(self.centrals)):
@@ -88,7 +98,8 @@ class StateRepresentation(object):
             lst.append((i, [x for x in self.dict[i]]))
             self.gains = self.heuristic()
         return f"Llista de tuples on el primer element és la central i el segon la llista de clients que té assignats: \n {lst} " \
-               f"\n i té uns beneficis de {self.gains}"
+               f"\n i té uns beneficis de {self.gains}" \
+               f"\n Els clients que no estàn assignats a cap central són: \n {len(self.left)}"
 
     
 
@@ -97,15 +108,15 @@ class StateRepresentation(object):
     def generate_actions(self):
         #Swap central state
         for c in self.dict:
-            if self.centrals[c].Estado == False:
-                #self.centrals[c].Estado = True
+            if self.states[c] == False:
+                #self.states[c] = True
                 yield SwapState(c, True)
             else:
                 exists_granted = False
                 for x in self.dict[c]:
                     if self.clients[x].Contrato == 0 and not exists_granted:
                         exists_granted = True
-                        #self.centrals[c].Estado = True
+                        #self.states[c] = True
                 if not exists_granted:
                     c_gain = 0
                     for i in self.dict[c]:
@@ -114,6 +125,14 @@ class StateRepresentation(object):
                     c_gain -= VEnergia.costs_production_mw(self.centrals[c].Tipo) * self.centrals[c].Produccion
                     if c_gain < 0:
                         yield SwapState(c,False)
+
+        #Introduce client into set:
+        for c in self.dict:
+            for cl in self.left:
+                if power_left(c,self.dict,self.clients,self.centrals) > clients_power(cl,self.dict,self.clients,self.centrals,c):
+                    yield InsertClient(cl,c)
+
+
 
 
 
@@ -150,7 +169,7 @@ class StateRepresentation(object):
         if isinstance(action,SwapState):
             ce = action.ce
             estate = action.estate
-            new_state.centrals[ce].Estado = estate
+            new_state.states[ce] = estate
 
         elif isinstance(action,MoveClient):
             cl = action.cl
@@ -170,6 +189,12 @@ class StateRepresentation(object):
             new_state.dict[ce2].remove(cl2)
             new_state.dict[ce1].add(cl2)
             new_state.dict[ce2].add(cl1)
+        elif isinstance(action, InsertClient):
+            cl = action.cl
+            c = action.c
+
+            new_state.dict[c].add(cl)
+
         return new_state
 
     def heuristic(self) -> float:
@@ -181,7 +206,7 @@ class StateRepresentation(object):
                 type = client.Tipo
                 consump = client.Consumo
                 deal = client.Contrato
-                if self.centrals[c].Estado == False:
+                if self.states[c] == False:
                     self.gains -= VEnergia.tarifa_cliente_penalizacion(type) * consump
                 else:
                     if deal == 0:
@@ -189,11 +214,14 @@ class StateRepresentation(object):
                     else:
                         self.gains += VEnergia.tarifa_cliente_no_garantizada(type) * consump
 
-            if self.centrals[c].Estado == False:
+            if self.states[c] == False:
                 self.gains -= VEnergia.stop_cost(self.centrals[c].Tipo)
             else:
                 self.gains -= VEnergia.daily_cost(self.centrals[c].Tipo)
                 self.gains -= VEnergia.costs_production_mw(self.centrals[c].Tipo) * self.centrals[c].Produccion
+
+        for cl in self.left:
+            self.gains -= VEnergia.tarifa_cliente_penalizacion(self.clients[cl].Tipo) * self.clients[cl].Consumo
 
         #print(self.gains)
         return self.gains
@@ -202,9 +230,7 @@ def generate_initial_state(params: Parameters) -> StateRepresentation:
     clients = Clientes(params.n_cl,params.propc,params.propg,params.seed)
     centrals = Centrales(params.n_c,params.seed)
     state_dict = {i: set() for i in range(len(centrals))}
-
-    for c in centrals:
-        c.Estado = True
+    states = [True for x in range(len(centrals))]
 
     i = 0
     c = 0
@@ -218,15 +244,13 @@ def generate_initial_state(params: Parameters) -> StateRepresentation:
                 i += 1
         c += 1
 
-    return StateRepresentation(clients,centrals,state_dict)
+    return StateRepresentation(clients,centrals,state_dict,states)
 
 def generate_initial_state_half(params: Parameters) -> StateRepresentation:
     clients = Clientes(params.n_cl, params.propc, params.propg, params.seed)
     centrals = Centrales(params.n_c, params.seed)
     state_dict = {i: set() for i in range(len(centrals))}
-
-    for c in centrals:
-        c.Estado = True
+    states = [True for x in range(len(centrals))]
 
     i = 0
     c = 0
@@ -253,7 +277,7 @@ def generate_initial_state_half(params: Parameters) -> StateRepresentation:
                 i += 1
         if not half:
             c += 1
-    return StateRepresentation(clients, centrals, state_dict)
+    return StateRepresentation(clients, centrals, state_dict,states)
 
 
 def generate_initial_state_granted(params: Parameters) -> StateRepresentation:
@@ -262,9 +286,7 @@ def generate_initial_state_granted(params: Parameters) -> StateRepresentation:
     clients_no_granted = []
     centrals = Centrales(params.n_c, params.seed)
     state_dict = {i: set() for i in range(len(centrals))}
-
-    for c in centrals:
-        c.Estado = True
+    state = [True for i in range(len(centrals))]
 
     for cl in range(len(clients)):
         if clients[cl].Contrato == 0:
@@ -306,10 +328,18 @@ def generate_initial_state_granted(params: Parameters) -> StateRepresentation:
     if clients_granted != []:
         raise Exception("Not a valid initial state")
     if clients_no_granted != []:
-        #QUE FEM AMB ELS CLIENTS QUE SOBREN
-        return StateRepresentation(clients, centrals, state_dict,clients_no_granted)
+        aux = []
+        for cl in clients_no_granted:
+            aux.append([cl[1].Consumo,cl[0],cl[1]])
+        aux.sort()
 
-    return StateRepresentation(clients, centrals, state_dict)
+        for i in aux[::-1]:
+            clients_no_granted.remove((i[1],i[2])) #clients_no_granted.index((i[1],i[2]))
+            clients_no_granted.insert(0,i[0])
+
+        return StateRepresentation(clients, centrals, state_dict,state,clients_no_granted)
+
+    return StateRepresentation(clients, centrals, state_dict,state)
 
 
 
@@ -317,9 +347,7 @@ def generate_initial_state_random(params: Parameters) -> StateRepresentation:
     clients = Clientes(params.n_cl, params.propc, params.propg, params.seed)
     centrals = Centrales(params.n_c, params.seed)
     state_dict = {i: set() for i in range(len(centrals))}
-
-    for c in centrals:
-        c.Estado = True
+    states = [True for x in range(len(centrals))]
 
     i = 0
     n_c = len(centrals)
@@ -345,7 +373,7 @@ def generate_initial_state_random(params: Parameters) -> StateRepresentation:
                     i += 1
                     placed = True
             c += 1
-    return StateRepresentation(clients, centrals, state_dict)
+    return StateRepresentation(clients, centrals, state_dict,states)
 
 class CentralDistributionProblem(Problem):
     def __init__(self, initial_state: StateRepresentation):
@@ -369,12 +397,12 @@ initial_state = generate_initial_state_granted(Parameters([5, 10, 25],2000, [0.2
 #initial_state2 = generate_initial_state2(Parameters([5, 10, 25],1000, [0.2, 0.3, 0.5], 0.5, 42))
 #print(initial_state)
 #print(initial_state2)
-initial_gains = initial_state.heuristic()
+#initial_gains = initial_state.heuristic()
 #initial_gains2 = initial_state2.heuristic()
-n = hill_climbing(CentralDistributionProblem(initial_state))
+#n = hill_climbing(CentralDistributionProblem(initial_state))
 # #n = hill_climbing(CentralDistributionProblem(initial_state2))
-print(n)
-print(initial_gains)
+#print(n)
+#print(initial_gains)
 
 print(timeit.timeit(lambda: hill_climbing(CentralDistributionProblem(initial_state)), number=1))
 #print(timeit.timeit(lambda: hill_climbing(CentralDistributionProblem(initial_state2)), number=1))
