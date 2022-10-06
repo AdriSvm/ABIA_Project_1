@@ -142,6 +142,8 @@ class StateRepresentation(object):
                                     and clients_power(sec_client, self.dict, self.clients, self.centrals) < pl2  and pl1 > 0 and pl2 > 0:
                                     yield SwapClients(client,central,sec_client,sec_central)
         '''
+
+
     def apply_action(self, action: Operators):
         new_state = self.copy()
         
@@ -192,13 +194,7 @@ class StateRepresentation(object):
             else:
                 self.gains -= VEnergia.daily_cost(self.centrals[c].Tipo)
                 self.gains -= VEnergia.costs_production_mw(self.centrals[c].Tipo) * self.centrals[c].Produccion
-        '''
-        p_l = 0
-        for c in self.dict:
-            if self.centrals[c].Estado == True:
-                p_l += power_left(c,self.dict,self.clients,self.centrals)
-        ratio = p_l / len(self.centrals)
-        '''
+
         #print(self.gains)
         return self.gains
 
@@ -259,6 +255,64 @@ def generate_initial_state_half(params: Parameters) -> StateRepresentation:
             c += 1
     return StateRepresentation(clients, centrals, state_dict)
 
+
+def generate_initial_state_granted(params: Parameters) -> StateRepresentation:
+    clients = Clientes(params.n_cl, params.propc, params.propg, params.seed)
+    clients_granted = []
+    clients_no_granted = []
+    centrals = Centrales(params.n_c, params.seed)
+    state_dict = {i: set() for i in range(len(centrals))}
+
+    for c in centrals:
+        c.Estado = True
+
+    for cl in range(len(clients)):
+        if clients[cl].Contrato == 0:
+            clients_granted.append((cl,clients[cl]))
+        else:
+            clients_no_granted.append((cl,clients[cl]))
+
+
+    end = False
+    while len(clients_granted) > 0 and not end:
+        c = 0
+        placed = False
+        while c < len(centrals) and not placed:
+            if power_left(c, state_dict, clients, centrals) < clients_power(clients_granted[0][0], state_dict, clients, centrals, c):
+                c += 1
+                if c == len(centrals)-1:
+                    end = True
+            else:
+                state_dict[c].add(clients.index(clients_granted[0][1]))
+                c += 1
+                placed = True
+                clients_granted.pop(0)
+
+    end = False
+    while len(clients_no_granted) > 0 and not end:
+        c = 0
+        placed = False
+        while c < len(centrals) and not placed:
+            if power_left(c, state_dict, clients, centrals) < clients_power(clients_no_granted[0][0], state_dict, clients, centrals, c):
+                c += 1
+                if c == len(centrals)-1:
+                    end = True
+            else:
+                state_dict[c].add(clients.index(clients_no_granted[0][1]))
+                c += 1
+                placed = True
+                clients_no_granted.pop(0)
+
+    if clients_granted != []:
+        raise Exception("Not a valid initial state")
+    if clients_no_granted != []:
+        #QUE FEM AMB ELS CLIENTS QUE SOBREN
+        return StateRepresentation(clients, centrals, state_dict,clients_no_granted)
+
+    return StateRepresentation(clients, centrals, state_dict)
+
+
+
 def generate_initial_state_random(params: Parameters) -> StateRepresentation:
     clients = Clientes(params.n_cl, params.propc, params.propg, params.seed)
     centrals = Centrales(params.n_c, params.seed)
@@ -311,18 +365,18 @@ class CentralDistributionProblem(Problem):
 
 
 #initial_state = generate_initial_state(Parameters([1, 4, 5],100, [0.2, 0.3, 0.5], 0.5, 42))
-#initial_state = generate_initial_state(Parameters([5, 10, 25],1000, [0.2, 0.3, 0.5], 0.5, 42))
+initial_state = generate_initial_state_granted(Parameters([5, 10, 25],2000, [0.2, 0.3, 0.5], 0.5, 65))
 #initial_state2 = generate_initial_state2(Parameters([5, 10, 25],1000, [0.2, 0.3, 0.5], 0.5, 42))
 #print(initial_state)
 #print(initial_state2)
-#initial_gains = initial_state.heuristic()
+initial_gains = initial_state.heuristic()
 #initial_gains2 = initial_state2.heuristic()
-#n = hill_climbing(CentralDistributionProblem(initial_state))
-#n = hill_climbing(CentralDistributionProblem(initial_state2))
-#print(n)
-#print(initial_gains2)
+n = hill_climbing(CentralDistributionProblem(initial_state))
+# #n = hill_climbing(CentralDistributionProblem(initial_state2))
+print(n)
+print(initial_gains)
 
-#print(timeit.timeit(lambda: hill_climbing(CentralDistributionProblem(initial_state)), number=1))
+print(timeit.timeit(lambda: hill_climbing(CentralDistributionProblem(initial_state)), number=1))
 #print(timeit.timeit(lambda: hill_climbing(CentralDistributionProblem(initial_state2)), number=1))
 
 #print(n)
