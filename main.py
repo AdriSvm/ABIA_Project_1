@@ -51,6 +51,15 @@ class MoveClient(Operators):
     def __repr__(self) -> str:
         return f" | Client {self.cl} changed central {self.cent1} to central{self.cent2}"
 
+class EchangeClients(Operators):
+        def __init__(self,c:int,cl:int,other:list):
+            self.c = c
+            self.cl = cl
+            self.other = other
+
+        def __repr__(self) -> str:
+            return f" | Client {self.cl} echanged for {self.other} in central {self.other}"
+
 def distance(a:tuple,b:tuple) -> float:
     return sqrt(((a[0]-b[0])**2) + ((a[1]-b[1])**2))
 
@@ -91,6 +100,15 @@ class StateRepresentation(object):
         new_left = [x for x in self.left]
         new_states = [x for x in self.states]
         return StateRepresentation(self.clients,self.centrals,new_dict,new_states, new_left)
+    def sort_left(self):
+        aux = []
+        for cl in self.left:
+            aux.append([self.clients[cl].Consumo, cl, self.clients[cl]])
+        aux.sort()
+
+        for i in aux[::-1]:
+            self.left.remove(i[1])  # clients_no_granted.index((i[1],i[2]))
+            self.left.insert(0, i[1])
     def __repr__(self) -> str:
         lst = []
         for i in range(len(self.centrals)):
@@ -132,11 +150,33 @@ class StateRepresentation(object):
                 if power_left(c,self.dict,self.clients,self.centrals) > clients_power(cl,self.dict,self.clients,self.centrals,c):
                     yield InsertClient(cl,c)
 
+        '''
+        #Echange client w/ central with another w/o central
+        for cl in self.left:
+            for c in self.dict:
+                not_granted = []
+                for cl2 in self.dict[c]:
+                    if self.clients[cl2].Contrato == 1:
+                        not_granted.append((clients_power(cl2,self.dict,self.clients,self.centrals,c),cl2))
+                not_granted.sort()
+                for i in range(len(not_granted)):
+                    not_granted[i] = not_granted[i][1]
+                cl_power = clients_power(cl,self.dict,self.clients,self.centrals,c)
+                cl2_power = 0
+                i = 0
+                while cl2_power + power_left(c,self.dict,self.clients,self.centrals) < cl_power and i < len(not_granted):
+                    cl2_power += clients_power(not_granted[i],self.dict,self.clients,self.centrals,c)
+                    #print(cl2_power + power_left(c, self.dict, self.clients, self.centrals) >= cl_power)
+                    if cl2_power + power_left(c, self.dict, self.clients, self.centrals) >= cl_power:
+                        gains_cl2 = 0
+                        for i in not_granted[:i]:
+                            gains_cl2 += VEnergia.tarifa_cliente_no_garantizada(self.clients[i].Tipo)
 
+                        if VEnergia.tarifa_cliente_no_garantizada(self.clients[cl].Tipo) > gains_cl2:
 
-
-
-                    
+                            yield EchangeClients(c,cl,not_granted[:i])
+                    i += 1
+        '''
 
         #Move client to another central
         for c in self.dict:
@@ -145,6 +185,7 @@ class StateRepresentation(object):
                     if c1 != c:
                         pl = power_left(c1, self.dict, self.clients, self.centrals)
                         if clients_power(c1, self.dict, self.clients, self.centrals) <  pl and pl > 0:
+
                             yield MoveClient(cl,c,c1)
         
         '''
@@ -194,6 +235,18 @@ class StateRepresentation(object):
             c = action.c
 
             new_state.dict[c].add(cl)
+        elif isinstance(action,EchangeClients):
+            cl = action.cl
+            c = action.c
+            other = action.other
+
+            for i in other:
+                new_state.dict[c].remove(i)
+                new_state.left.append(i)
+                new_state.dict[c].add(cl)
+
+            new_state.sort_left()
+
 
         return new_state
 
@@ -280,6 +333,38 @@ def generate_initial_state_half(params: Parameters) -> StateRepresentation:
     return StateRepresentation(clients, centrals, state_dict,states)
 
 
+def generate_initial_state_only_granted(params:Parameters) -> StateRepresentation:
+    clients = Clientes(params.n_cl, params.propc, params.propg, params.seed)
+    clients_granted = []
+    clients_no_granted = []
+    centrals = Centrales(params.n_c, params.seed)
+    state_dict = {i: set() for i in range(len(centrals))}
+    state = [True for i in range(len(centrals))]
+
+    for cl in range(len(clients)):
+        if clients[cl].Contrato == 0:
+            clients_granted.append((cl, clients[cl]))
+        else:
+            clients_no_granted.append(cl)
+
+    end = False
+    while len(clients_granted) > 0 and not end:
+        c = 0
+        placed = False
+        while c < len(centrals) and not placed:
+            if power_left(c, state_dict, clients, centrals) < clients_power(clients_granted[0][0], state_dict, clients, centrals, c):
+                c += 1
+                if c == len(centrals) - 1:
+                    end = True
+            else:
+                state_dict[c].add(clients.index(clients_granted[0][1]))
+                c += 1
+                placed = True
+                clients_granted.pop(0)
+
+    return StateRepresentation(clients, centrals, state_dict, state, clients_no_granted)
+
+
 def generate_initial_state_granted(params: Parameters) -> StateRepresentation:
     clients = Clientes(params.n_cl, params.propc, params.propg, params.seed)
     clients_granted = []
@@ -335,7 +420,7 @@ def generate_initial_state_granted(params: Parameters) -> StateRepresentation:
 
         for i in aux[::-1]:
             clients_no_granted.remove((i[1],i[2])) #clients_no_granted.index((i[1],i[2]))
-            clients_no_granted.insert(0,i[0])
+            clients_no_granted.insert(0,i[1])
 
         return StateRepresentation(clients, centrals, state_dict,state,clients_no_granted)
 
@@ -393,18 +478,18 @@ class CentralDistributionProblem(Problem):
 
 
 #initial_state = generate_initial_state(Parameters([1, 4, 5],100, [0.2, 0.3, 0.5], 0.5, 42))
-initial_state = generate_initial_state_granted(Parameters([5, 10, 25],2000, [0.2, 0.3, 0.5], 0.5, 65))
+initial_state = generate_initial_state_only_granted(Parameters([5, 10, 25],2000, [0.2, 0.3, 0.5], 0.5, 65))
 #initial_state2 = generate_initial_state2(Parameters([5, 10, 25],1000, [0.2, 0.3, 0.5], 0.5, 42))
 #print(initial_state)
 #print(initial_state2)
-#initial_gains = initial_state.heuristic()
+initial_gains = initial_state.heuristic()
 #initial_gains2 = initial_state2.heuristic()
-#n = hill_climbing(CentralDistributionProblem(initial_state))
+n = hill_climbing(CentralDistributionProblem(initial_state))
 # #n = hill_climbing(CentralDistributionProblem(initial_state2))
-#print(n)
-#print(initial_gains)
+print(n)
+print(initial_gains)
 
-print(timeit.timeit(lambda: hill_climbing(CentralDistributionProblem(initial_state)), number=1))
+#print(timeit.timeit(lambda: hill_climbing(CentralDistributionProblem(initial_state)), number=1))
 #print(timeit.timeit(lambda: hill_climbing(CentralDistributionProblem(initial_state2)), number=1))
 
 #print(n)
