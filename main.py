@@ -290,7 +290,7 @@ class StateRepresentation(object):
 
                         gains_c1 += gain_cliente
                     pl = power_left(c1, self.dict, self.clients, self.centrals)
-                    if clients_power(c1, self.dict, self.clients, self.centrals) <  pl and pl > 0 and gains_c1 > gains_c:
+                    if clients_power(cl, self.dict, self.clients, self.centrals,c1) <  pl and pl > 0 and gains_c1 > gains_c:
                         yield MoveClient(cl,c,c1)
 
 
@@ -311,11 +311,13 @@ class StateRepresentation(object):
             
             if gains < 0:
                 if self.states[c] == False:
+                    if exist_granted:
+                        yield SwapState(c, True)
                     pass
                 else:
                     coste_enc = VEnergia.daily_cost(self.centrals[c].Tipo) + (VEnergia.costs_production_mw(self.centrals[c].Tipo) * self.centrals[c].Produccion)
                     coste_ap = VEnergia.stop_cost(self.centrals[c].Tipo)
-                    if coste_ap < coste_enc:
+                    if coste_ap < coste_enc and not exist_granted:
                         yield SwapState(c, False)
                     else:
                         yield SwapState(c, True)
@@ -348,15 +350,7 @@ class StateRepresentation(object):
                             yield EchangeClients(c,cl,not_granted[:i])
                     i += 1
         """
-                    
-        """
-        for c1 in self.dict:
-            if c1 != c:
-                pl = power_left(c1, self.dict, self.clients, self.centrals)
-                if clients_power(c1, self.dict, self.clients, self.centrals) <  pl and pl > 0:
-                    yield MoveClient(cl,c,c1)"""
-        
-        '''
+        '''            
         #Echange two clients
         for central in self.dict:
             for client in self.dict[central]:
@@ -405,6 +399,7 @@ class StateRepresentation(object):
             c = action.c
 
             new_state.dict[c].add(cl)
+            new_state.left.remove(cl)
 
         elif isinstance(action,EchangeClients):
             cl = action.cl
@@ -467,7 +462,6 @@ def generate_initial_state(params: Parameters) -> StateRepresentation:
                 state_dict[c].add(i)
                 i += 1
         c += 1
-
     return StateRepresentation(clients,centrals,state_dict,states)
 
 def g22_half(params: Parameters) -> StateRepresentation:
@@ -494,19 +488,22 @@ def gen_mitad(params : Parameters) -> StateRepresentation:
     clients = Clientes(params.n_cl, params.propc, params.propg, params.seed)
     centrals = Centrales(params.n_c, params.seed)
     state_dict = {i: set() for i in range(len(centrals))}
-    #states = [True for x in range(len(centrals))]
-    states = [False for x in range(len(centrals))]
+    states = [True for x in range(len(centrals))]
+    left = []
 
     i = 0
     for c in state_dict:
-        power_central_half = power_left(c, state_dict, clients, centrals) * 0.4
+        power_central_half = power_left(c, state_dict, clients, centrals)
         power_acum_client = 0
         while power_central_half > power_acum_client and i < len(clients):
-            state_dict[c].add(i)
-            power_acum_client += clients_power(i, state_dict, clients, centrals, c)
+            if clients[i].Contrato == 0:
+                state_dict[c].add(i)
+                power_acum_client += clients_power(i, state_dict, clients, centrals, c)
+            else:
+                left.append(i)
             i += 1
 
-    return StateRepresentation(clients, centrals, state_dict,states)
+    return StateRepresentation(clients, centrals, state_dict,states,left)
 
 
 
@@ -600,7 +597,7 @@ class CentralDistributionProblem(Problem):
 
 def experiment1():
     
-    initial_state = generate_initial_state_granted(Parameters([5, 10, 25],1000, [0.2, 0.3, 0.5], 0.5, 22))
+    initial_state = gen_mitad(Parameters([5, 10, 25],1000, [0.2, 0.3, 0.5], 0.5, 22))
     #initial_state = gen_mitad(Parameters([1, 4, 5],100, [0.2, 0.3, 0.5], 0.5, 22))
     initial_gains = initial_state.heuristic()
 
@@ -613,7 +610,7 @@ def experiment1():
 
     print(f" La representació del estat final és aquesta \n {n}")
 
-    print(f"Els operadors utilitzats han sigut :\n {str(list(initial_state.generate_actions()))}")
+    print(f"Els operadors utilitzats han sigut :\n {str(list(n.generate_actions()))}")
     
     #print(f"Els temps és de {timeit.timeit(lambda: hill_climbing(CentralDistributionProblem(generate_initial_state_granted(Parameters([1, 4, 5],100, [0.2, 0.3, 0.5], 0.5, 22)))), number=1)} gen_mitad")
     #print(f"Els temps és de {timeit.timeit(lambda: simulated_annealing(CentralDistributionProblem(generate_initial_state_granted(Parameters([1, 4, 5],100, [0.2, 0.3, 0.5], 0.5, 22))), schedule= exp_schedule(k = para_sim_an[0], lam= para_sim_an[1], limit= para_sim_an[2])), number=1)} granted")
@@ -622,7 +619,7 @@ def experiment1():
     #print(f"La central 1 tiene un coste encendida de {(VEnergia.costs_production_mw(n.centrals[1].Tipo) * n.centrals[1].Produccion) + VEnergia.daily_cost(n.centrals[1].Tipo)} \n y tiene un coste apagada de {VEnergia.stop_cost(n.centrals[1].Tipo)}")
     #print(timeit.timeit(lambda: simulated_annealing(CentralDistributionProblem(initial_state, use_one_action= True), schedule= exp_schedule(k=1, lam = 0.0005, limit=2500), number=1)))
     #print(f"Els temps és de {timeit.timeit(lambda: hill_climbing(CentralDistributionProblem(gen_mitad(Parameters([5, 10, 25],1000, [0.2, 0.3, 0.5], 0.5, 22)))), number=1)} gen_mitad")
-    print(f"Els temps és de {timeit.timeit(lambda: hill_climbing(CentralDistributionProblem(generate_initial_state_granted(Parameters([5, 10, 25],1000, [0.2, 0.3, 0.5], 0.5, 22)))), number=1)} granted")
+    print(f"Els temps és de {timeit.timeit(lambda: n, number=1)} granted")
     #print(f"Els temps és de {timeit.timeit(lambda: simulated_annealing(CentralDistributionProblem(generate_initial_state_granted(Parameters([1, 4, 5],100, [0.2, 0.3, 0.5], 0.5, 22))), schedule= exp_schedule(k = para_sim_an[0], lam= para_sim_an[1], limit= para_sim_an[2])), number=1)} granted")
 
 
@@ -645,6 +642,6 @@ print(timeit.timeit(lambda: simulated_annealing(CentralDistributionProblem(initi
 
 #print(n)
 """
-
+experiment1()
 
 
