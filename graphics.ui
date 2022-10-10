@@ -6,21 +6,61 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1276</width>
-    <height>600</height>
+    <width>1664</width>
+    <height>1116</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>MainWindow</string>
   </property>
-  <widget class="QWidget" name="centralwidget"/>
+  <widget class="QWidget" name="centralwidget">
+   <widget class="QPushButton" name="btn_init_state">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>30</y>
+      <width>141</width>
+      <height>51</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Show Initial State</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="btn_fin_state">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>120</y>
+      <width>141</width>
+      <height>61</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Show final State</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="pixelmap">
+    <property name="geometry">
+     <rect>
+      <x>170</x>
+      <y>10</y>
+      <width>1461</width>
+      <height>1061</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+   </widget>
+  </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1276</width>
-     <height>21</height>
+     <width>1664</width>
+     <height>17</height>
     </rect>
    </property>
   </widget>
