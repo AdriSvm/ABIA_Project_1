@@ -1,7 +1,17 @@
 
 #Operadors
 
+'''#Introduce client into set:
+        self.sort_left()
+        for c_l in self.left:
+            cl_p_init = clients_power(c_l, self.dict, self.clients, self.centrals, 0)
+            ce = 0
+            for c in self.dict:
+                cl_p_actual = clients_power(c_l, self.dict, self.clients,self.centrals, c)
+                if power_left(c, self.dict, self.clients, self.centrals) > cl_p_actual and cl_p_actual <= cl_p_init:
+                    ce = c
 
+            yield InsertClient(c_l, ce)'''
 """
 #Swap central state
 for c in self.dict:
@@ -21,7 +31,8 @@ for c in self.dict:
             c_gain -= VEnergia.daily_cost(self.centrals[c].Tipo)
             c_gain -= VEnergia.costs_production_mw(self.centrals[c].Tipo) * self.centrals[c].Produccion
             if c_gain < 0:
-                yield SwapState(c,False)"""
+                yield SwapState(c,False)
+"""
 
 """
         #Echange client w/ central with another w/o central

@@ -9,23 +9,24 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
     def __init__(self,*args,obj=None,**kwargs):
         super(MainWindow,self).__init__(*args,**kwargs)
 
-        canvas = QtGui.QPixmap(1000, 1000)
+        canvas = QtGui.QPixmap(1700, 1400)
         self.setupUi(self)
         self.pixelmap.setPixmap(canvas)
-        self.pixelmap.setFixedHeight(1000)
-        self.pixelmap.setFixedWidth(1000)
+        self.pixelmap.setFixedHeight(1400)
+        self.pixelmap.setFixedWidth(1400)
         self.pen = QtGui.QPen()
+        self.setFixedSize(1700,1450)
+
+        self.initial_state, self.n = experiment('HILL CLIMBING', 'ORDERED', [5, 10, 25], 1000, [0.2, 0.3, 0.5],
+                                                0.5, 22, False)
 
 
-
-
-        self.initial_state, self.n = experiment1()
         self.btn_init_state.clicked.connect(self.draw_init_state)
-        self.btn_fin_state.clicked.connect(self.draw_fin_state)
+        self.btn_fin_state.clicked.connect(self.draw_something)
+
 
     def draw_something(self):
-        from random import randint
-        painter = QtGui.QPainter(self.label.pixmap())
+        painter = QtGui.QPainter(self.pixelmap.pixmap())
         pen = QtGui.QPen()
         pen.setWidth(15)
         pen.setColor(QtGui.QColor('blue'))
@@ -38,45 +39,87 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
     def draw_init_state(self):
         painter = QtGui.QPainter(self.pixelmap.pixmap())
+        pen = QtGui.QPen()
+        painter.setPen(pen)
         for i in self.initial_state.dict:
-            self.pen.setWidth(5)
-            self.pen.setColor(QtGui.QColor('green'))
-            painter.setPen(self.pen)
-            x1 = self.initial_state.centrals[i].CoordX * 10
-            y1 = self.initial_state.centrals[i].CoordY * 10
+            pen.setWidth(10)
+            pen.setColor(QtGui.QColor('green'))
+            painter.setPen(pen)
+            x1 = self.initial_state.centrals[i].CoordX * 14
+            y1 = self.initial_state.centrals[i].CoordY * 14
 
             painter.drawPoint(x1,y1)
 
             for cl in self.initial_state.dict[i]:
-                self.pen.setWidth(10)
-                self.pen.setColor(QtGui.QColor('red'))
-                painter.setPen(self.pen)
-                x2 = self.initial_state.clients[cl].CoordX * 10
-                y2 = self.initial_state.clients[cl].CoordY * 10
-                painter.drawPoint(x2, y2)
-                painter.drawLine(x1,x2,y1,y2)
+                pen.setWidth(5)
+                x2 = self.initial_state.clients[cl].CoordX * 14
+                y2 = self.initial_state.clients[cl].CoordY * 14
 
+                if self.initial_state.clients[cl].Contrato == 0:
+                    pen.setColor(QtGui.QColor('yellow'))
+                    painter.setPen(pen)
+                    painter.drawPoint(x2, y2)
+                else:
+                    pen.setColor(QtGui.QColor('red'))
+                    painter.setPen(pen)
+                    painter.drawPoint(x2, y2)
+
+                pen.setWidth(1)
+                pen.setColor(QtGui.QColor('white'))
+                painter.setPen(pen)
+                painter.drawLine(x1,y1,x2,y2)
+
+        for i in self.initial_state.left:
+            pen.setWidth(5)
+            pen.setColor(QtGui.QColor('red'))
+            painter.setPen(pen)
+            x2 = self.initial_state.clients[i].CoordX * 14
+            y2 = self.initial_state.clients[i].CoordY * 14
+            painter.drawPoint(x2, y2)
+        print('printed')
         painter.end()
+
 
     def draw_fin_state(self):
         painter = QtGui.QPainter(self.pixelmap.pixmap())
+        pen = QtGui.QPen()
+        painter.setPen(pen)
         for i in self.n.dict:
-            self.pen.setWidth(5)
-            self.pen.setColor(QtGui.QColor('green'))
-            painter.setPen(self.pen)
-            x1 = self.n.centrals[i].CoordX * 10
-            y1 = self.n.centrals[i].CoordY * 10
+            pen.setWidth(10)
+            pen.setColor(QtGui.QColor('green'))
+            painter.setPen(pen)
+            x1 = self.n.centrals[i].CoordX * 14
+            y1 = self.n.centrals[i].CoordY * 14
 
             painter.drawPoint(x1, y1)
 
             for cl in self.n.dict[i]:
-                self.pen.setWidth(10)
-                self.pen.setColor(QtGui.QColor('red'))
-                painter.setPen(self.pen)
-                x2 = self.n.clients[cl].CoordX * 10
-                y2 = self.n.clients[cl].CoordY * 10
-                painter.drawPoint(x2, y2)
-                painter.drawLine(x1, x2, y1, y2)
+                pen.setWidth(5)
+                x2 = self.n.clients[cl].CoordX * 14
+                y2 = self.n.clients[cl].CoordY * 14
+
+                if self.n.clients[cl].Contrato == 0:
+                    pen.setColor(QtGui.QColor('yellow'))
+                    painter.setPen(pen)
+                    painter.drawPoint(x2, y2)
+                else:
+                    pen.setColor(QtGui.QColor('red'))
+                    painter.setPen(pen)
+                    painter.drawPoint(x2, y2)
+
+                pen.setWidth(1)
+                pen.setColor(QtGui.QColor('white'))
+                painter.setPen(pen)
+                painter.drawLine(x1, y1, x2, y2)
+
+        for i in self.n.left:
+            pen.setWidth(5)
+            pen.setColor(QtGui.QColor('red'))
+            painter.setPen(pen)
+            x2 = self.n.clients[i].CoordX * 14
+            y2 = self.n.clients[i].CoordY * 14
+            painter.drawPoint(x2, y2)
+
         painter.end()
 
 
