@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1664</width>
+    <width>2214</width>
     <height>1116</height>
    </rect>
   </property>
@@ -17,11 +17,16 @@
    <widget class="QPushButton" name="btn_init_state">
     <property name="geometry">
      <rect>
-      <x>10</x>
-      <y>30</y>
-      <width>141</width>
-      <height>51</height>
+      <x>20</x>
+      <y>970</y>
+      <width>181</width>
+      <height>101</height>
      </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>10</pointsize>
+     </font>
     </property>
     <property name="text">
      <string>Show Initial State</string>
@@ -30,11 +35,16 @@
    <widget class="QPushButton" name="btn_fin_state">
     <property name="geometry">
      <rect>
-      <x>10</x>
-      <y>120</y>
-      <width>141</width>
-      <height>61</height>
+      <x>280</x>
+      <y>970</y>
+      <width>201</width>
+      <height>101</height>
      </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>10</pointsize>
+     </font>
     </property>
     <property name="text">
      <string>Show final State</string>
@@ -43,8 +53,8 @@
    <widget class="QLabel" name="pixelmap">
     <property name="geometry">
      <rect>
-      <x>170</x>
-      <y>10</y>
+      <x>540</x>
+      <y>30</y>
       <width>1461</width>
       <height>1061</height>
      </rect>
@@ -53,13 +63,393 @@
      <string/>
     </property>
    </widget>
+   <widget class="QLabel" name="lbl_num_centrals">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>10</y>
+      <width>441</width>
+      <height>71</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>12</pointsize>
+     </font>
+    </property>
+    <property name="text">
+     <string>Número de centrals segons el tipus A,B i C respectivament</string>
+    </property>
+   </widget>
+   <widget class="QLineEdit" name="txt_c_a">
+    <property name="geometry">
+     <rect>
+      <x>30</x>
+      <y>80</y>
+      <width>113</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>10</pointsize>
+     </font>
+    </property>
+    <property name="text">
+     <string>5</string>
+    </property>
+   </widget>
+   <widget class="QLineEdit" name="txt_c_b">
+    <property name="geometry">
+     <rect>
+      <x>170</x>
+      <y>80</y>
+      <width>113</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>10</pointsize>
+     </font>
+    </property>
+    <property name="text">
+     <string>10</string>
+    </property>
+   </widget>
+   <widget class="QLineEdit" name="txt_c_c">
+    <property name="geometry">
+     <rect>
+      <x>320</x>
+      <y>80</y>
+      <width>113</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>10</pointsize>
+     </font>
+    </property>
+    <property name="text">
+     <string>25</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="lbl_n_clients">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>150</y>
+      <width>181</width>
+      <height>51</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>12</pointsize>
+     </font>
+    </property>
+    <property name="text">
+     <string>Nombre de clients</string>
+    </property>
+   </widget>
+   <widget class="QLineEdit" name="txt_num_clients">
+    <property name="geometry">
+     <rect>
+      <x>30</x>
+      <y>210</y>
+      <width>113</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>1000</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="lbl_propc">
+    <property name="geometry">
+     <rect>
+      <x>200</x>
+      <y>150</y>
+      <width>261</width>
+      <height>51</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>12</pointsize>
+     </font>
+    </property>
+    <property name="text">
+     <string>Proporció de clients XG, MG I G </string>
+    </property>
+   </widget>
+   <widget class="QLineEdit" name="txt_clients_XG">
+    <property name="geometry">
+     <rect>
+      <x>200</x>
+      <y>210</y>
+      <width>71</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>0.2</string>
+    </property>
+   </widget>
+   <widget class="QLineEdit" name="txt_clients_MG">
+    <property name="geometry">
+     <rect>
+      <x>300</x>
+      <y>210</y>
+      <width>71</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>0.3</string>
+    </property>
+   </widget>
+   <widget class="QLineEdit" name="txt_clients_G">
+    <property name="geometry">
+     <rect>
+      <x>400</x>
+      <y>210</y>
+      <width>71</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>0.5</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="lbl_propg">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>270</y>
+      <width>311</width>
+      <height>61</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>12</pointsize>
+     </font>
+    </property>
+    <property name="text">
+     <string>Proporció de clients amb suministre garantitzat</string>
+    </property>
+   </widget>
+   <widget class="QLineEdit" name="txt_propg">
+    <property name="geometry">
+     <rect>
+      <x>30</x>
+      <y>330</y>
+      <width>113</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>0.5</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="lbl_seed">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>380</y>
+      <width>261</width>
+      <height>51</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>12</pointsize>
+     </font>
+    </property>
+    <property name="text">
+     <string>Llavor generadora dels clients i centrals</string>
+    </property>
+   </widget>
+   <widget class="QLineEdit" name="txt_seed">
+    <property name="geometry">
+     <rect>
+      <x>20</x>
+      <y>440</y>
+      <width>113</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>22</string>
+    </property>
+   </widget>
+   <widget class="QComboBox" name="box_gen">
+    <property name="geometry">
+     <rect>
+      <x>20</x>
+      <y>560</y>
+      <width>491</width>
+      <height>22</height>
+     </rect>
+    </property>
+    <item>
+     <property name="text">
+      <string>Seleccionar una funció generadora</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>Primer garantitzats i després tots no garantitzats(ORDERED)</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>Només garantitzats per ordre d'arribada(ONLY GRANTED)</string>
+     </property>
+    </item>
+   </widget>
+   <widget class="QLabel" name="lbl_gen">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>500</y>
+      <width>181</width>
+      <height>51</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>12</pointsize>
+     </font>
+    </property>
+    <property name="text">
+     <string>Funció generadora</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="lbl_method">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>640</y>
+      <width>181</width>
+      <height>51</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>12</pointsize>
+     </font>
+    </property>
+    <property name="text">
+     <string>Mètode</string>
+    </property>
+   </widget>
+   <widget class="QComboBox" name="box_method">
+    <property name="geometry">
+     <rect>
+      <x>20</x>
+      <y>700</y>
+      <width>491</width>
+      <height>22</height>
+     </rect>
+    </property>
+    <item>
+     <property name="text">
+      <string>Seleccionar un mètode</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>Hill Climbing</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>Simulated Annealing</string>
+     </property>
+    </item>
+   </widget>
+   <widget class="QPushButton" name="btn_execute">
+    <property name="geometry">
+     <rect>
+      <x>280</x>
+      <y>740</y>
+      <width>201</width>
+      <height>101</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>10</pointsize>
+     </font>
+    </property>
+    <property name="text">
+     <string>Executar algorisme</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="lbl_executing">
+    <property name="geometry">
+     <rect>
+      <x>280</x>
+      <y>860</y>
+      <width>211</width>
+      <height>71</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>14</pointsize>
+     </font>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+   </widget>
+   <widget class="QLabel" name="lbl_timing">
+    <property name="geometry">
+     <rect>
+      <x>20</x>
+      <y>870</y>
+      <width>211</width>
+      <height>71</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>14</pointsize>
+     </font>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="btn_time">
+    <property name="geometry">
+     <rect>
+      <x>20</x>
+      <y>740</y>
+      <width>191</width>
+      <height>101</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>10</pointsize>
+     </font>
+    </property>
+    <property name="text">
+     <string>Temps d'execució</string>
+    </property>
+   </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1664</width>
+     <width>2214</width>
      <height>17</height>
     </rect>
    </property>

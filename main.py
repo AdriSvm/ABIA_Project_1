@@ -221,36 +221,35 @@ class StateRepresentation(object):
 
     def generate_actions(self):
 
+        # Move client to another central
+
+
         #InsertClient
         if len(self.left) > 0:
             self.sort_left()
             cl = self.left[0]
             for i in self.dict:
-
                 if power_left(i,self.dict,self.clients,self.centrals) > clients_power(cl,self.dict,self.clients,self.centrals,i):
                     yield InsertClient(cl, i)
 
 
-        
-        #Move client to another central
         for cl in range(len(self.clients)):
             c_fin = None
             if cl not in self.left:
-                cons_cl = clients_power(cl,self.dict,self.clients,self.centrals)
+                cons_cl = clients_power(cl, self.dict, self.clients, self.centrals)
 
                 for c in self.dict:
                     if cl in self.dict[c]:
                         c_init = c
 
-                    cons_cl_fin = clients_power(cl,self.dict,self.clients,self.centrals,c)
+                    cons_cl_fin = clients_power(cl, self.dict, self.clients, self.centrals, c)
 
                     if cons_cl > cons_cl_fin:
                         cons_cl = cons_cl_fin
                         c_fin = c
 
             if c_fin != None:
-                yield MoveClient(cl,c_init,c_fin)
-
+                yield MoveClient(cl, c_init, c_fin)
 
 
         #modificación swap central state
@@ -339,7 +338,7 @@ class StateRepresentation(object):
             self.gains -= VEnergia.tarifa_cliente_penalizacion(self.clients[cl].Tipo) * self.clients[cl].Consumo
 
         print(self.gains)
-        return self.gains
+        return self.gains - len(self.left) - len([x for x in filter(lambda x : x == False, self.states)])
 
 def gen_initial_state_only_granted(params: Parameters) -> StateRepresentation:
     '''
@@ -442,7 +441,7 @@ def gen_initial_state_ordered(params: Parameters) -> StateRepresentation:
 
         for i in aux[::-1]:
             clients_no_granted.remove((i[1],i[2])) #clients_no_granted.index((i[1],i[2]))
-            clients_no_granted.insert(0,i[0])
+            clients_no_granted.insert(0,i[1])
 
         return StateRepresentation(clients, centrals, state_dict,state,clients_no_granted)
 
@@ -474,13 +473,11 @@ class CentralDistributionProblem(Problem):
 
 
 def experiment(algorithm:str, method:str, n_c:list[int],n_cl:int,propcl:list[float],propg:float,seed:int,timming = False,n_iter=1):
-    method.upper()
-    method.split()
-    algorithm.upper()
+    method = method.upper()
+    algorithm = algorithm.upper()
     initial_state = None
     n = None
-    print((method, algorithm))
-    if type(timming) == str:
+    if type(timming) == str or not timming:
         if algorithm == 'HILL CLIMBING':
 
             if method == 'ORDERED':
@@ -511,35 +508,44 @@ def experiment(algorithm:str, method:str, n_c:list[int],n_cl:int,propcl:list[flo
                 print(f"La representació del estat inicial és aquesta \n {initial_state}")
 
                 print(f" La representació del estat final és aquesta \n {n}")
-        timming = True
+        if timming != False:
+            timming = True
 
-    if timming:
+    if timming != False:
         if algorithm == 'HILL CLIMBING':
+            print("adeu)")
             if method == 'ORDERED':
-                print(
-                    f'''Els temps és de {timeit.timeit(lambda: hill_climbing(CentralDistributionProblem
-                    (gen_initial_state_ordered(Parameters([5, 10, 25], 1000, [0.2, 0.3, 0.5], 0.5, 22)))), number=n_iter)}''')
-
+                #print(
+                #    f'''Els temps és de {timeit.timeit(lambda: hill_climbing(CentralDistributionProblem
+                #    (gen_initial_state_ordered(Parameters([5, 10, 25], 1000, [0.2, 0.3, 0.5], 0.5, 22)))), number=n_iter)}''')
+                return None
             if method == 'ONLY GRANTED':
-                print(
-                    f'''Els temps és de {timeit.timeit(lambda: hill_climbing(CentralDistributionProblem
-                    (gen_initial_state_only_granted(Parameters([5, 10, 25], 1000, [0.2, 0.3, 0.5], 0.5, 22)))), number=n_iter)}''')
-
+                #print(
+                #    f'''Els temps és de {timeit.timeit(lambda: hill_climbing(CentralDistributionProblem
+                #    (gen_initial_state_only_granted(Parameters([5, 10, 25], 1000, [0.2, 0.3, 0.5], 0.5, 22)))), number=n_iter)}''')
+                return timeit.timeit(lambda: hill_climbing(CentralDistributionProblem
+                    (gen_initial_state_only_granted(Parameters([5, 10, 25], 1000, [0.2, 0.3, 0.5], 0.5, 22)))), number=n_iter)
         elif algorithm == 'SIMULATED ANNEALING':
             if method == 'ORDERED':
-                print(
-                    f'''Els temps és de {timeit.timeit(lambda: simulated_annealing(CentralDistributionProblem
-                    (gen_initial_state_ordered(Parameters([5, 10, 25], 1000, [0.2, 0.3, 0.5], 0.5, 22)))), number=n_iter)}''')
-            if method == 'ONLY GRANTED':
-                print(
-                    f'''Els temps és de {timeit.timeit(lambda: simulated_annealing(CentralDistributionProblem
-                    (gen_initial_state_only_granted(Parameters([5, 10, 25], 1000, [0.2, 0.3, 0.5], 0.5, 22)))), number=n_iter)}''')
+                #print(
+                #    f'''Els temps és de {timeit.timeit(lambda: simulated_annealing(CentralDistributionProblem
+                #    (gen_initial_state_ordered(Parameters([5, 10, 25], 1000, [0.2, 0.3, 0.5], 0.5, 22)))), number=n_iter)}''')
 
+                return timeit.timeit(lambda: simulated_annealing(CentralDistributionProblem
+                    (gen_initial_state_ordered(Parameters([5, 10, 25], 1000, [0.2, 0.3, 0.5], 0.5, 22)))), number=n_iter)
+            if method == 'ONLY GRANTED':
+                #print(
+                #    f'''Els temps és de {timeit.timeit(lambda: simulated_annealing(CentralDistributionProblem
+                #    (gen_initial_state_only_granted(Parameters([5, 10, 25], 1000, [0.2, 0.3, 0.5], 0.5, 22)))), number=n_iter)}''')
+                return timeit.timeit(lambda: simulated_annealing(CentralDistributionProblem
+                                                          (gen_initial_state_only_granted(
+                                                              Parameters([5, 10, 25], 1000, [0.2, 0.3, 0.5], 0.5,
+                                                                         22)))), number=n_iter)
     if initial_state == None or n == None:
         raise Exception("Error executing")
     print(initial_state,n)
     return initial_state, n
 
 
-#experiment('HILL CLIMBING','ORDERED',[5, 10, 25],1000, [0.2, 0.3, 0.5], 0.5, 22,'Also')
-#experiment('HILL CLIMBING','ONLY GRANTED',[5, 10, 25],1000, [0.2, 0.3, 0.5], 0.5, 22,'Also')
+#experiment('HILL CLIMBING','ORDERED',[5, 10, 25],1000, [0.2, 0.3, 0.5], 0.5, 22)
+#experiment('HILL CLIMBING','ONLY GRANTED',[5, 10, 25],1000, [0.2, 0.3, 0.5], 0.5, 22)
