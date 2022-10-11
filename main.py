@@ -79,12 +79,13 @@ def power_left(central:int, dicc:dict, clients:Clientes, centrals:Centrales) -> 
 
 
 class StateRepresentation(object):
-    def __init__(self, clients:clientes, centrals:centrales, dict:dict, states:list, left:list = []):
+    def __init__(self, clients:Clientes, centrals:Centrales, dict:dict, states:list, left:list = []):
         self.clients = clients
         self.centrals = centrals
         self.dict = dict
-        self.left = left
         self.states = states
+        self.left = left
+        self.sort_left()
 
     def copy(self):
         new_dict = {x:self.dict[x].copy() for x in self.dict}
@@ -221,18 +222,32 @@ class StateRepresentation(object):
 
     def generate_actions(self):
 
-        # Move client to another central
+
 
 
         #InsertClient
+        '''
         if len(self.left) > 0:
             self.sort_left()
             cl = self.left[0]
             for i in self.dict:
                 if power_left(i,self.dict,self.clients,self.centrals) > clients_power(cl,self.dict,self.clients,self.centrals,i):
                     yield InsertClient(cl, i)
+        '''
+        if len(self.left) > 0:
+            cl = self.left[0]
+            miin = VEnergia.loss(distance((self.clients[cl].CoordX, self.clients[cl].CoordY), (self.centrals[0].CoordX, self.centrals[0].CoordY)))
+            c = 0
+            for i in self.dict:
+                d = VEnergia.loss(distance((self.clients[cl].CoordX,self.clients[cl].CoordY),(self.centrals[i].CoordX,self.centrals[i].CoordY)))
 
+                if miin > d and power_left(i,self.dict,self.clients,self.centrals) >= clients_power(cl,self.dict,self.clients,self.centrals,i):
+                    miin = d
+                    c = i
 
+            yield InsertClient(cl,c)
+
+        # Move client to another central
         for cl in range(len(self.clients)):
             c_fin = None
             if cl not in self.left:
@@ -250,6 +265,8 @@ class StateRepresentation(object):
 
             if c_fin != None:
                 yield MoveClient(cl, c_init, c_fin)
+
+
 
 
         #modificación swap central state
@@ -340,7 +357,7 @@ class StateRepresentation(object):
         print(self.gains)
         return self.gains - len(self.left) - len([x for x in filter(lambda x : x == False, self.states)])
 
-def gen_initial_state_only_granted(params: Parameters) -> StateRepresentation:
+def gen_initial_state_only_granted2(params: Parameters) -> StateRepresentation:
     '''
     Funció generadora de l'estat inicial.
     Reparteix tots els garantitzats i els no garantitzats els deixa fora.
@@ -379,6 +396,85 @@ def gen_initial_state_only_granted(params: Parameters) -> StateRepresentation:
 
 
     return StateRepresentation(clients,centrals,state_dict,states,clients_no_granted)
+
+def gen_initial_state_only_granted(params : Parameters) -> StateRepresentation:
+    '''
+    Funció generadora de l'estat inicial.
+    Reparteix tots els garantitzats i els no garantitzats els deixa fora.
+    Si els clients garantitzats no caben en les centrals, llança una excepció.
+    '''
+    clients = Clientes(params.n_cl,params.propc,params.propg,params.seed)
+    centrals = Centrales(params.n_c,params.seed)
+    state_dict = {i: set() for i in range(len(centrals))}
+    states = [True for x in range(len(centrals))]
+    clients_granted = []
+    clients_no_granted = []
+
+    for cl in range(len(clients)):
+        if clients[cl].Contrato == 0:
+            clients_granted.append(cl)
+        else:
+            clients_no_granted.append(cl)
+
+
+    for cl in clients_granted:
+        lossers = []
+        c = 0
+        while c <= len(centrals) -1:
+            loss = VEnergia.loss(distance((clients[cl].CoordX, clients[cl].CoordY),(centrals[c].CoordX, centrals[c].CoordY)))
+            lossers.append(loss)
+            c += 1
+
+        central = lossers.index(min(lossers))
+        state_dict[central].add(cl)
+
+    return StateRepresentation(clients,centrals,state_dict,states,clients_no_granted)
+
+def gen_initial_state_only_granted3(params: Parameters) -> StateRepresentation:
+    '''
+    Funció generadora de l'estat inicial.
+    Reparteix tots els garantitzats i els no garantitzats els deixa fora.
+    Si els clients garantitzats no caben en les centrals, llança una excepció.
+    '''
+    clients = Clientes(params.n_cl,params.propc,params.propg,params.seed)
+    centrals = Centrales(params.n_c,params.seed)
+    state_dict = {i: set() for i in range(len(centrals))}
+    states = [True for x in range(len(centrals))]
+    clients_granted = []
+    clients_no_granted = []
+
+    for cl in range(len(clients)):
+        if clients[cl].Contrato == 0:
+            clients_granted.append((cl,clients[cl]))
+        else:
+            clients_no_granted.append(cl)
+
+    c = 0
+    end = 0
+    ending = False
+    n = len(clients_granted)
+    while len(clients_granted) > 0 and not ending:
+
+        if c >= len(centrals):
+            c = 0
+            end += 1
+
+        if power_left(c, state_dict, clients, centrals) < clients_power(clients_granted[0][0], state_dict, clients, centrals, c):
+            c += 1
+        else:
+            state_dict[c].add(clients.index(clients_granted[0][1]))
+            c += 1
+            clients_granted.pop(0)
+
+        if end > n + 10:
+            ending = True
+
+    if len(clients_granted) > 0:
+        raise Exception("Estat inicial no vàlid, els clients garantitzats no caben en les centrals")
+
+
+    return StateRepresentation(clients,centrals,state_dict,states,clients_no_granted)
+
 
 def gen_initial_state_ordered(params: Parameters) -> StateRepresentation:
     '''

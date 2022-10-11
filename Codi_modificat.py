@@ -1,6 +1,32 @@
 
 #Operadors
+'''
+for i, cl in enumerate(self.clients):
+    c = 0
+    actual = None
+    final = None
+    if i not in self.left:
 
+        for c in self.dict:
+            if i in self.dict[c]:
+                actual = c
+                break
+
+        miin = VEnergia.loss(
+            distance((cl.CoordX, cl.CoordY), (self.centrals[actual].CoordX, self.centrals[actual].CoordY)))
+
+        while c <= len(self.centrals) - 1:
+            d = VEnergia.loss(distance((cl.CoordX, cl.CoordY), (self.centrals[c].CoordX, self.centrals[c].CoordY)))
+            cons_cl = clients_power(i, self.dict, self.clients, self.centrals, c)
+
+            if miin > d and cons_cl < power_left(c, self.dict, self.clients, self.centrals) and c != actual:
+                miin = d
+                final = c
+            c += 1
+
+        if final != None:
+            yield MoveClient(i, actual, final)
+            '''
 '''#Introduce client into set:
         self.sort_left()
         for c_l in self.left:

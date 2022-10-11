@@ -15,31 +15,40 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.pixelmap.setFixedHeight(1050)
         self.pixelmap.setFixedWidth(1050)
         self.setBaseSize(1900,1050)
+
         self.btn_execute.clicked.connect(self.draw_executing)
+        self.show()
         self.btn_execute.clicked.connect(self.execute_experiment)
         self.btn_execute.clicked.connect(self.draw_executing)
+
         self.btn_time.clicked.connect(self.execute_timming)
+
         self.btn_init_state.clicked.connect(self.draw_executing)
         self.btn_init_state.clicked.connect(self.draw_init_state)
         self.btn_init_state.clicked.connect(self.draw_executing)
+
         self.btn_fin_state.clicked.connect(self.draw_executing)
         self.btn_fin_state.clicked.connect(self.draw_fin_state)
         self.btn_fin_state.clicked.connect(self.draw_executing)
 
+        self.lbl_executing.show()
 
 
     def draw_executing(self):
         if self.lbl_executing.text() != "Executing...":
             self.lbl_executing.setText("Executing...")
+            self.lbl_executing.show()
         elif self.lbl_executing.text() == "Executing...":
             self.lbl_executing.setText("Executed")
+            self.lbl_executing.show()
         self.show()
 
 
     def execute_experiment(self):
+        self.lbl_executing.setText("Executing...")
         n = int(self.txt_num_clients.text())
         c_a= int(self.txt_c_a.text())
-        c_b = int(self.txt_c_c.text())
+        c_b = int(self.txt_c_b.text())
         c_c = int(self.txt_c_c.text())
         xg = float(self.txt_clients_XG.text())
         mg = float(self.txt_clients_MG.text())
@@ -54,11 +63,12 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
         method = self.box_method.currentText()
         self.initial_state, self.n = experiment(method,gen,[c_a,c_b,c_c],n,[xg,mg,g],propg,seed,False)
+        self.lbl_executing.setText("Executed")
 
     def execute_timming(self):
         n = self.txt_num_clients.text()
         c_a = self.txt_c_a.text()
-        c_b = self.txt_c_c.text()
+        c_b = self.txt_c_b.text()
         c_c = self.txt_c_c.text()
         xg = self.txt_clients_XG.text()
         mg = self.txt_clients_MG.text()
