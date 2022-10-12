@@ -47,6 +47,15 @@ class MoveClient(Operators):
     def __repr__(self) -> str:
         return f" | Client {self.cl} changed central {self.cent1} to central {self.cent2}"
 
+class SwapClients(Operators):
+    def __init__(self, cl1, c1, cl2, c2) -> str:
+        self.cl1 = cl1
+        self.c1 = c1
+        self.cl2 = cl2
+        self.c2 = c2
+
+    def __repr__(self) -> str:
+        return f" | Client {self.cl1} de la central {self.c1} intercanviat amb el client {self.cl2} de la central {self.c2}"
 def distance(a:tuple,b:tuple) -> float:
     return sqrt(((a[0]-b[0])**2) + ((a[1]-b[1])**2))
 
@@ -234,6 +243,7 @@ class StateRepresentation(object):
                 if power_left(i,self.dict,self.clients,self.centrals) > clients_power(cl,self.dict,self.clients,self.centrals,i):
                     yield InsertClient(cl, i)
         '''
+
         if len(self.left) > 0:
             cl = self.left[0]
             miin = VEnergia.loss(distance((self.clients[cl].CoordX, self.clients[cl].CoordY), (self.centrals[0].CoordX, self.centrals[0].CoordY)))
@@ -268,7 +278,7 @@ class StateRepresentation(object):
 
 
 
-
+        '''
         #modificación swap central state
         for c in self.dict:
             exist_granted = False
@@ -299,7 +309,20 @@ class StateRepresentation(object):
             else:
                 if not self.states[c]:
                     yield SwapState(c, True)
-
+        '''
+        # Echange two clients
+        for central in self.dict:
+            for client in self.dict[central]:
+                for sec_central in self.dict:
+                    if sec_central != central:
+                        for sec_client in self.dict[sec_central]:
+                            if sec_client != client:
+                                pl1 = power_left(sec_central, self.dict, self.clients, self.centrals)
+                                pl2 = power_left(central, self.dict, self.clients, self.centrals)
+                                if clients_power(client, self.dict, self.clients, self.centrals) < pl1 \
+                                        and clients_power(sec_client, self.dict, self.clients,
+                                                          self.centrals) < pl2 and pl1 > 0 and pl2 > 0:
+                                    yield SwapClients(client, central, sec_client, sec_central)
 
     def apply_action(self, action: Operators):
         new_state = self.copy()
@@ -324,6 +347,17 @@ class StateRepresentation(object):
 
             new_state.dict[c].add(cl)
             new_state.left.pop(0)
+
+        elif isinstance(action, SwapClients):
+            cl1 = action.cl1
+            c1 = action.c1
+            cl2 = action.cl2
+            c2 = action.c2
+
+            new_state.dict[c1].remove(cl1)
+            new_state.dict[c2].remove(cl2)
+            new_state.dict[c1].add(cl2)
+            new_state.dict[c2].add(cl1)
 
         return new_state
 
@@ -354,8 +388,7 @@ class StateRepresentation(object):
         for cl in self.left:
             self.gains -= VEnergia.tarifa_cliente_penalizacion(self.clients[cl].Tipo) * self.clients[cl].Consumo
 
-        print(self.gains)
-        return self.gains - len(self.left) - len([x for x in filter(lambda x : x == False, self.states)])
+        return self.gains
 
 def gen_initial_state_only_granted2(params: Parameters) -> StateRepresentation:
     '''
@@ -568,7 +601,7 @@ class CentralDistributionProblem(Problem):
 
 
 
-def experiment(algorithm:str, method:str, n_c:list[int],n_cl:int,propcl:list[float],propg:float,seed:int,timming = False,n_iter=1):
+def experiment(algorithm:str, method:str, n_c:list[int],n_cl:int,propcl:list[float],propg:float,seed:int,timming = False,n_iter=5):
     method = method.upper()
     algorithm = algorithm.upper()
     initial_state = None
@@ -644,5 +677,5 @@ def experiment(algorithm:str, method:str, n_c:list[int],n_cl:int,propcl:list[flo
 
 
 #experiment('HILL CLIMBING','ORDERED',[5, 10, 25],1000, [0.2, 0.3, 0.5], 0.5, 22)
-#experiment('HILL CLIMBING','ONLY GRANTED',[5, 10, 25],1000, [0.2, 0.3, 0.5], 0.5, 22)
+#experiment('HILL CLIMBING','ONLY GRANTED',[5, 10, 25],1000, [0.2, 0.3, 0.5], 0.75, 22)
 
