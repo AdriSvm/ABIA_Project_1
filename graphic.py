@@ -12,9 +12,9 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.n = None
 
         self.setupUi(self)
-        self.pixelmap.setFixedHeight(1050)
-        self.pixelmap.setFixedWidth(1050)
-        self.setBaseSize(1900,1050)
+        self.pixelmap.setFixedHeight(700)
+        self.pixelmap.setFixedWidth(700)
+        self.setBaseSize(1300,900)
 
         self.btn_execute.clicked.connect(self.draw_executing)
         self.show()
@@ -66,24 +66,26 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.lbl_executing.setText("Executed")
 
     def execute_timming(self):
-        n = self.txt_num_clients.text()
-        c_a = self.txt_c_a.text()
-        c_b = self.txt_c_b.text()
-        c_c = self.txt_c_c.text()
-        xg = self.txt_clients_XG.text()
-        mg = self.txt_clients_MG.text()
-        g = self.txt_clients_G.text()
-        propg = self.txt_propg.text()
-        seed = self.txt_seed.text()
-        gen = self.box_gen.itemText()
+        n = int(self.txt_num_clients.text())
+        c_a = int(self.txt_c_a.text())
+        c_b = int(self.txt_c_b.text())
+        c_c = int(self.txt_c_c.text())
+        xg = float(self.txt_clients_XG.text())
+        mg = float(self.txt_clients_MG.text())
+        g = float(self.txt_clients_G.text())
+        propg = float(self.txt_propg.text())
+        seed = int(self.txt_seed.text())
+        gen = self.box_gen.currentText()
         print(gen)
         if gen == "Només garantitzats per ordre d'arribada(ONLY GRANTED)":
             gen = "ONLY GRANTED"
         else:
             gen = "ORDERED"
 
-        method = self.box_method.itemText()
+        method = self.box_method.currentText()
         self.initial_state, self.n = experiment(method, gen, [c_a, c_b, c_c], n, [xg, mg, g], propg, seed, True)
+        self.lbl_timing.setText(print(self.initial_state))
+
     def draw_something(self):
 
         painter = QtGui.QPainter(self.pixelmap.pixmap())

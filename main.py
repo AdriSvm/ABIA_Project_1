@@ -614,13 +614,14 @@ def experiment(algorithm:str, method:str, n_c:list[int],n_cl:int,propcl:list[flo
                 #print(
                 #    f'''Els temps és de {timeit.timeit(lambda: hill_climbing(CentralDistributionProblem
                 #    (gen_initial_state_ordered(Parameters([5, 10, 25], 1000, [0.2, 0.3, 0.5], 0.5, 22)))), number=n_iter)}''')
-                return None
+                return timeit.timeit(lambda: hill_climbing(CentralDistributionProblem
+                    (gen_initial_state_ordered(Parameters(n_c, n_cl, propcl, propg, seed)))), number=n_iter), False
             if method == 'ONLY GRANTED':
                 #print(
                 #    f'''Els temps és de {timeit.timeit(lambda: hill_climbing(CentralDistributionProblem
                 #    (gen_initial_state_only_granted(Parameters([5, 10, 25], 1000, [0.2, 0.3, 0.5], 0.5, 22)))), number=n_iter)}''')
                 return timeit.timeit(lambda: hill_climbing(CentralDistributionProblem
-                    (gen_initial_state_only_granted(Parameters([5, 10, 25], 1000, [0.2, 0.3, 0.5], 0.5, 22)))), number=n_iter)
+                    (gen_initial_state_only_granted(Parameters(n_c, n_cl, propcl, propg, seed)))), number=n_iter), False
         elif algorithm == 'SIMULATED ANNEALING':
             if method == 'ORDERED':
                 #print(
@@ -628,15 +629,14 @@ def experiment(algorithm:str, method:str, n_c:list[int],n_cl:int,propcl:list[flo
                 #    (gen_initial_state_ordered(Parameters([5, 10, 25], 1000, [0.2, 0.3, 0.5], 0.5, 22)))), number=n_iter)}''')
 
                 return timeit.timeit(lambda: simulated_annealing(CentralDistributionProblem
-                    (gen_initial_state_ordered(Parameters([5, 10, 25], 1000, [0.2, 0.3, 0.5], 0.5, 22)))), number=n_iter)
+                    (gen_initial_state_ordered(Parameters(n_c, n_cl, propcl, propg, seed)))), number=n_iter), False
             if method == 'ONLY GRANTED':
                 #print(
                 #    f'''Els temps és de {timeit.timeit(lambda: simulated_annealing(CentralDistributionProblem
                 #    (gen_initial_state_only_granted(Parameters([5, 10, 25], 1000, [0.2, 0.3, 0.5], 0.5, 22)))), number=n_iter)}''')
                 return timeit.timeit(lambda: simulated_annealing(CentralDistributionProblem
                                                           (gen_initial_state_only_granted(
-                                                              Parameters([5, 10, 25], 1000, [0.2, 0.3, 0.5], 0.5,
-                                                                         22)))), number=n_iter)
+                                                              Parameters(n_c, n_cl, propcl, propg, seed)))), number=n_iter), False
     if initial_state == None or n == None:
         raise Exception("Error executing")
     print(initial_state,n)
@@ -645,3 +645,4 @@ def experiment(algorithm:str, method:str, n_c:list[int],n_cl:int,propcl:list[flo
 
 #experiment('HILL CLIMBING','ORDERED',[5, 10, 25],1000, [0.2, 0.3, 0.5], 0.5, 22)
 #experiment('HILL CLIMBING','ONLY GRANTED',[5, 10, 25],1000, [0.2, 0.3, 0.5], 0.5, 22)
+
