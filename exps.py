@@ -13,8 +13,8 @@ def exp1():
     timmings = []
     for i in seeds:
         seed = i
-        initial_state, n = experiment('HILL CLIMBING', 'ONLY GRANTED', [5, 10, 25], 1000, [0.2, 0.3, 0.5], 0.75, seed, False)
-        timming, nothing = experiment('HILL CLIMBING', 'ONLY GRANTED', [5, 10, 25], 1000, [0.2, 0.3, 0.5], 0.75, seed, True)
+        initial_state, n = experiment('SIMULATED ANNEALING', 'ONLY GRANTED', [5, 10, 25], 1000, [0.2, 0.3, 0.5], 0.75, seed, False)
+        timming, nothing = experiment('SIMULATED ANEALING', 'ONLY GRANTED', [5, 10, 25], 1000, [0.2, 0.3, 0.5], 0.75, seed, True)
         gains_init = initial_state.heuristic()
         gains_fin = n.heuristic()
         timming /= 5

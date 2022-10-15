@@ -48,7 +48,7 @@ class MoveClient(Operators):
         return f" | Client {self.cl} changed central {self.cent1} to central {self.cent2}"
 
 class SwapClients(Operators):
-    def __init__(self, cl1, c1, cl2, c2) -> str:
+    def __init__(self, cl1, c1, cl2, c2):
         self.cl1 = cl1
         self.c1 = c1
         self.cl2 = cl2
@@ -122,80 +122,76 @@ class StateRepresentation(object):
                f"\n Els clients que no estàn assignats a cap central són: \n {len(self.left)}"
 
     def generate_one_action(self):
+        intro_cl_comb = set()
+        if len(self.left) > 0:
+            cl = self.left[0]
+            miin = VEnergia.loss(distance((self.clients[cl].CoordX, self.clients[cl].CoordY), (self.centrals[0].CoordX, self.centrals[0].CoordY)))
+            c = 0
+            for i in self.dict:
+                d = VEnergia.loss(distance((self.clients[cl].CoordX,self.clients[cl].CoordY),(self.centrals[i].CoordX,self.centrals[i].CoordY)))
+
+                if miin > d and power_left(i,self.dict,self.clients,self.centrals) >= clients_power(cl,self.dict,self.clients,self.centrals,i):
+                    miin = d
+                    c = i
+
+            intro_cl_comb.add((cl,c))
+
+
+        # Move client to another central
+        move_cl_comb = set()
+        for cl in range(len(self.clients)):
+            c_fin = None
+            if cl not in self.left:
+                cons_cl = clients_power(cl, self.dict, self.clients, self.centrals)
+
+                for c in self.dict:
+                    if cl in self.dict[c]:
+                        c_init = c
+
+                    cons_cl_fin = clients_power(cl, self.dict, self.clients, self.centrals, c)
+
+                    if cons_cl > cons_cl_fin:
+                        cons_cl = cons_cl_fin
+                        c_fin = c
+
+            if c_fin != None:
+                move_cl_comb.add((cl, c_init, c_fin))
+
+
+
         #Swap central state
         swap_state_comb = set()
         for c in self.dict:
             exist_granted = False
             for cl in self.dict[c]:
-                if self.clients[cl].Contrato == 0:
+                if self.clients[cl].Contrato == 0 and not exist_granted:
                     exist_granted = True
-                    break
 
-            if exist_granted:
-                swap_state_comb.add((c, True))
-
-            else:
+            if not exist_granted:
                 gains = 0
                 for cl in self.dict[c]:
                     gains += VEnergia.tarifa_cliente_no_garantizada(self.clients[cl].Tipo) * self.clients[cl].Consumo
 
                 gains -= VEnergia.daily_cost(self.centrals[c].Tipo)
                 gains -= VEnergia.costs_production_mw(self.centrals[c].Tipo) * self.centrals[c].Produccion
-                
+
                 if gains < 0:
                     if self.states[c] == False:
                         pass
                     else:
-                        swap_state_comb.add((c, False))
+                        coste_enc = VEnergia.daily_cost(self.centrals[c].Tipo) + (
+                                    VEnergia.costs_production_mw(self.centrals[c].Tipo) * self.centrals[c].Produccion)
+                        coste_ap = VEnergia.stop_cost(self.centrals[c].Tipo)
+                        if coste_ap < coste_enc:
+                            swap_state_comb.add((c, False))
+                        else:
+                            swap_state_comb.add((c, True))
                 else:
                     swap_state_comb.add((c, True))
+            else:
+                if not self.states[c]:
+                    swap_state_comb.add((c, True))
 
-        #Introduce client into set:
-        intro_cl_comb = set()
-        for c in self.dict:
-            for cl in self.left:
-                if power_left(c,self.dict,self.clients,self.centrals) > clients_power(cl,self.dict,self.clients,self.centrals,c):
-                    intro_cl_comb.add((cl,c))
-
-
-
-
-
-        #Move client to another central
-        move_cl_comb = set()
-        for c in self.dict:
-            gains_c = 0
-            for cl in self.dict[c]:
-                if self.clients[cl].Contrato == 0:
-                    gains_c += VEnergia.tarifa_cliente_garantizada(self.clients[cl].Tipo) * self.clients[cl].Consumo
-
-                else:
-                    gains_c += VEnergia.tarifa_cliente_no_garantizada(self.clients[cl].Tipo) * self.clients[cl].Consumo
-
-            for cl in self.dict[c]:
-                gains_cm = gains_c
-                if self.clients[cl].Contrato == 0:
-                    gains_cm -= VEnergia.tarifa_cliente_garantizada(self.clients[cl].Tipo) * self.clients[cl].Consumo
-
-                else:
-                    gains_cm -= VEnergia.tarifa_cliente_no_garantizada(self.clients[cl].Tipo) * self.clients[cl].Consumo
-
-                gain_cliente = gains_c - gains_cm
-
-                for c1 in self.dict:
-                    gains_c1 = 0
-                    if c1 != c:
-                        for cl in self.dict[c1]:
-                            if self.clients[cl].Contrato == 0:
-                                gains_c1 += VEnergia.tarifa_cliente_garantizada(self.clients[cl].Tipo) * self.clients[cl].Consumo
-
-                            else:
-                                gains_c1 += VEnergia.tarifa_cliente_no_garantizada(self.clients[cl].Tipo) * self.clients[cl].Consumo
-
-                        gains_c1 += gain_cliente
-                        pl = power_left(c1, self.dict, self.clients, self.centrals)
-                        if clients_power(c1, self.dict, self.clients, self.centrals) <  pl and pl > 0 and gains_c1 > gains_c:
-                            move_cl_comb.add((cl,c1,c))
 
         m = len(move_cl_comb)
         i = len(intro_cl_comb)
@@ -243,7 +239,7 @@ class StateRepresentation(object):
                 if power_left(i,self.dict,self.clients,self.centrals) > clients_power(cl,self.dict,self.clients,self.centrals,i):
                     yield InsertClient(cl, i)
         '''
-
+        '''
         if len(self.left) > 0:
             cl = self.left[0]
             miin = VEnergia.loss(distance((self.clients[cl].CoordX, self.clients[cl].CoordY), (self.centrals[0].CoordX, self.centrals[0].CoordY)))
@@ -275,7 +271,7 @@ class StateRepresentation(object):
 
             if c_fin != None:
                 yield MoveClient(cl, c_init, c_fin)
-
+        '''
 
 
         '''
@@ -310,6 +306,7 @@ class StateRepresentation(object):
                 if not self.states[c]:
                     yield SwapState(c, True)
         '''
+
         # Echange two clients
         for central in self.dict:
             for client in self.dict[central]:
@@ -323,6 +320,7 @@ class StateRepresentation(object):
                                         and clients_power(sec_client, self.dict, self.clients,
                                                           self.centrals) < pl2 and pl1 > 0 and pl2 > 0:
                                     yield SwapClients(client, central, sec_client, sec_central)
+
 
     def apply_action(self, action: Operators):
         new_state = self.copy()
@@ -387,7 +385,7 @@ class StateRepresentation(object):
 
         for cl in self.left:
             self.gains -= VEnergia.tarifa_cliente_penalizacion(self.clients[cl].Tipo) * self.clients[cl].Consumo
-
+        print(self.gains)
         return self.gains
 
 def gen_initial_state_only_granted2(params: Parameters) -> StateRepresentation:
@@ -626,14 +624,15 @@ def experiment(algorithm:str, method:str, n_c:list[int],n_cl:int,propcl:list[flo
         elif algorithm == 'SIMULATED ANNEALING':
             if method == 'ORDERED':
                 initial_state = gen_initial_state_ordered(Parameters(n_c,n_cl,propcl,propg,seed))
-                n = simulated_annealing(CentralDistributionProblem(initial_state))
+                n = simulated_annealing(CentralDistributionProblem(initial_state), schedule=exp_schedule(k= 1, lam= 0.005, limit=2400))
                 print(f"La representació del estat inicial és aquesta \n {initial_state}")
 
                 print(f" La representació del estat final és aquesta \n {n}")
 
             elif method == 'ONLY GRANTED':
+                print("Calculant algorisme")
                 initial_state = gen_initial_state_only_granted(Parameters(n_c, n_cl, propcl, propg, seed))
-                n = simulated_annealing(CentralDistributionProblem(initial_state))
+                n = simulated_annealing(CentralDistributionProblem(initial_state), schedule=exp_schedule(k= 1, lam= 0.005, limit=2400))
                 print(f"La representació del estat inicial és aquesta \n {initial_state}")
 
                 print(f" La representació del estat final és aquesta \n {n}")
@@ -662,14 +661,15 @@ def experiment(algorithm:str, method:str, n_c:list[int],n_cl:int,propcl:list[flo
                 #    (gen_initial_state_ordered(Parameters([5, 10, 25], 1000, [0.2, 0.3, 0.5], 0.5, 22)))), number=n_iter)}''')
 
                 return timeit.timeit(lambda: simulated_annealing(CentralDistributionProblem
-                    (gen_initial_state_ordered(Parameters(n_c, n_cl, propcl, propg, seed)))), number=n_iter), False
+                    (gen_initial_state_ordered(Parameters(n_c, n_cl, propcl, propg, seed))), schedule=exp_schedule(k= 1, lam= 0.005, limit=2400)), number=n_iter), False
             if method == 'ONLY GRANTED':
+                print("calculant temps")
                 #print(
                 #    f'''Els temps és de {timeit.timeit(lambda: simulated_annealing(CentralDistributionProblem
                 #    (gen_initial_state_only_granted(Parameters([5, 10, 25], 1000, [0.2, 0.3, 0.5], 0.5, 22)))), number=n_iter)}''')
                 return timeit.timeit(lambda: simulated_annealing(CentralDistributionProblem
                                                           (gen_initial_state_only_granted(
-                                                              Parameters(n_c, n_cl, propcl, propg, seed)))), number=n_iter), False
+                                                              Parameters(n_c, n_cl, propcl, propg, seed))), schedule=exp_schedule(k= 1, lam= 0.005, limit=2400)), number=n_iter), False
     if initial_state == None or n == None:
         raise Exception("Error executing")
     print(initial_state,n)

@@ -76,7 +76,6 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         propg = float(self.txt_propg.text())
         seed = int(self.txt_seed.text())
         gen = self.box_gen.currentText()
-        print(gen)
         if gen == "Només garantitzats per ordre d'arribada(ONLY GRANTED)":
             gen = "ONLY GRANTED"
         else:
