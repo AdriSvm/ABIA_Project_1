@@ -227,19 +227,7 @@ class StateRepresentation(object):
 
     def generate_actions(self):
 
-
-
-
         #InsertClient
-        '''
-        if len(self.left) > 0:
-            self.sort_left()
-            cl = self.left[0]
-            for i in self.dict:
-                if power_left(i,self.dict,self.clients,self.centrals) > clients_power(cl,self.dict,self.clients,self.centrals,i):
-                    yield InsertClient(cl, i)
-        '''
-        '''
         if len(self.left) > 0:
             cl = self.left[0]
             miin = VEnergia.loss(distance((self.clients[cl].CoordX, self.clients[cl].CoordY), (self.centrals[0].CoordX, self.centrals[0].CoordY)))
@@ -274,7 +262,7 @@ class StateRepresentation(object):
         '''
 
 
-        '''
+
         #modificación swap central state
         for c in self.dict:
             exist_granted = False
@@ -306,7 +294,7 @@ class StateRepresentation(object):
                 if not self.states[c]:
                     yield SwapState(c, True)
         '''
-
+        '''
         # Echange two clients
         for central in self.dict:
             for client in self.dict[central]:
@@ -320,7 +308,7 @@ class StateRepresentation(object):
                                         and clients_power(sec_client, self.dict, self.clients,
                                                           self.centrals) < pl2 and pl1 > 0 and pl2 > 0:
                                     yield SwapClients(client, central, sec_client, sec_central)
-
+        '''
 
     def apply_action(self, action: Operators):
         new_state = self.copy()
@@ -385,48 +373,8 @@ class StateRepresentation(object):
 
         for cl in self.left:
             self.gains -= VEnergia.tarifa_cliente_penalizacion(self.clients[cl].Tipo) * self.clients[cl].Consumo
-        print(self.gains)
+        #print(self.gains)
         return self.gains
-
-def gen_initial_state_only_granted2(params: Parameters) -> StateRepresentation:
-    '''
-    Funció generadora de l'estat inicial.
-    Reparteix tots els garantitzats i els no garantitzats els deixa fora.
-    Si els clients garantitzats no caben en les centrals, llança una excepció.
-    '''
-    clients = Clientes(params.n_cl,params.propc,params.propg,params.seed)
-    centrals = Centrales(params.n_c,params.seed)
-    state_dict = {i: set() for i in range(len(centrals))}
-    states = [True for x in range(len(centrals))]
-    clients_granted = []
-    clients_no_granted = []
-
-    for cl in range(len(clients)):
-        if clients[cl].Contrato == 0:
-            clients_granted.append((cl,clients[cl]))
-        else:
-            clients_no_granted.append(cl)
-
-    end = False
-    while len(clients_granted) > 0 and not end:
-        c = 0
-        placed = False
-        while c < len(centrals) and not placed:
-            if power_left(c, state_dict, clients, centrals) < clients_power(clients_granted[0][0], state_dict, clients, centrals, c):
-                c += 1
-                if c == len(centrals)-1:
-                    end = True
-            else:
-                state_dict[c].add(clients.index(clients_granted[0][1]))
-                c += 1
-                placed = True
-                clients_granted.pop(0)
-
-    if len(clients_granted) > 0:
-        raise Exception("Estat inicial no vàlid, els clients garantitzats no caben en les centrals")
-
-
-    return StateRepresentation(clients,centrals,state_dict,states,clients_no_granted)
 
 def gen_initial_state_only_granted(params : Parameters) -> StateRepresentation:
     '''
@@ -460,52 +408,6 @@ def gen_initial_state_only_granted(params : Parameters) -> StateRepresentation:
         state_dict[central].add(cl)
 
     return StateRepresentation(clients,centrals,state_dict,states,clients_no_granted)
-
-def gen_initial_state_only_granted3(params: Parameters) -> StateRepresentation:
-    '''
-    Funció generadora de l'estat inicial.
-    Reparteix tots els garantitzats i els no garantitzats els deixa fora.
-    Si els clients garantitzats no caben en les centrals, llança una excepció.
-    '''
-    clients = Clientes(params.n_cl,params.propc,params.propg,params.seed)
-    centrals = Centrales(params.n_c,params.seed)
-    state_dict = {i: set() for i in range(len(centrals))}
-    states = [True for x in range(len(centrals))]
-    clients_granted = []
-    clients_no_granted = []
-
-    for cl in range(len(clients)):
-        if clients[cl].Contrato == 0:
-            clients_granted.append((cl,clients[cl]))
-        else:
-            clients_no_granted.append(cl)
-
-    c = 0
-    end = 0
-    ending = False
-    n = len(clients_granted)
-    while len(clients_granted) > 0 and not ending:
-
-        if c >= len(centrals):
-            c = 0
-            end += 1
-
-        if power_left(c, state_dict, clients, centrals) < clients_power(clients_granted[0][0], state_dict, clients, centrals, c):
-            c += 1
-        else:
-            state_dict[c].add(clients.index(clients_granted[0][1]))
-            c += 1
-            clients_granted.pop(0)
-
-        if end > n + 10:
-            ending = True
-
-    if len(clients_granted) > 0:
-        raise Exception("Estat inicial no vàlid, els clients garantitzats no caben en les centrals")
-
-
-    return StateRepresentation(clients,centrals,state_dict,states,clients_no_granted)
-
 
 def gen_initial_state_ordered(params: Parameters) -> StateRepresentation:
     '''
@@ -677,5 +579,6 @@ def experiment(algorithm:str, method:str, n_c:list[int],n_cl:int,propcl:list[flo
 
 
 #experiment('HILL CLIMBING','ORDERED',[5, 10, 25],1000, [0.2, 0.3, 0.5], 0.5, 22)
-#experiment('HILL CLIMBING','ONLY GRANTED',[5, 10, 25],1000, [0.2, 0.3, 0.5], 0.75, 22)
+#time, n = experiment('HILL CLIMBING','ONLY GRANTED',[5, 10, 25],1000, [0.2, 0.3, 0.5], 0.75, 1234,True,5)
+#print(time/5)
 

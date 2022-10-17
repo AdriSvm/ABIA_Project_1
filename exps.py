@@ -7,18 +7,17 @@ Fitxer per realitzar els diversos experiments
 #Experiment 1
 def exp1():
     df = pd.DataFrame()
-    seeds = [399,289,393,387,410,591,906,986,31,51]
+    seeds = [245,39,678,1345,239,29,568,1422,991,132]
     gains_inits = []
     gains_fins = []
     timmings = []
     for i in seeds:
         seed = i
-        initial_state, n = experiment('SIMULATED ANNEALING', 'ONLY GRANTED', [5, 10, 25], 1000, [0.2, 0.3, 0.5], 0.75, seed, False)
-        timming, nothing = experiment('SIMULATED ANEALING', 'ONLY GRANTED', [5, 10, 25], 1000, [0.2, 0.3, 0.5], 0.75, seed, True)
+        initial_state, n = experiment('HILL CLIMBING', 'ONLY GRANTED', [5, 10, 25], 1000, [0.2, 0.3, 0.5], 0.75, seed, False)
+        timming, nothing = experiment('HILL CLIMBING', 'ONLY GRANTED', [5, 10, 25], 1000, [0.2, 0.3, 0.5], 0.75, seed, True,5)
         gains_init = initial_state.heuristic()
         gains_fin = n.heuristic()
         timming /= 5
-        seeds.append(seed)
         gains_inits.append(gains_init)
         gains_fins.append(gains_fin)
         timmings.append(timming)
@@ -28,4 +27,86 @@ def exp1():
     df["mean_time"] = timmings
     return df
 
-print(exp1())
+#print(exp1())
+
+def exp2():
+    df = pd.DataFrame()
+    seeds = [245,39,678,1345,239,29,568,1422,991,132]
+    gains_inits_on = []
+    gains_inits_or = []
+    gains_fins_on = []
+    gains_fins_or = []
+    timmings_on = []
+    timmings_or = []
+    for i in seeds:
+
+        seed = i
+        print(f"fent experimentació en la llavor {seed}, temps emprat = {sum(timmings_on)+sum(timmings_or)}")
+        initial_state_on, n_on = experiment('HILL CLIMBING', 'ONLY GRANTED', [5, 10, 25], 1000, [0.2, 0.3, 0.5], 0.75, seed, False)
+        timming_on, nothing_on = experiment('HILL CLIMBING', 'ONLY GRANTED', [5, 10, 25], 1000, [0.2, 0.3, 0.5], 0.75, seed, True,5)
+        initial_state_or, n_or = experiment('HILL CLIMBING', 'ORDERED', [5, 10, 25], 1000, [0.2, 0.3, 0.5], 0.75, seed,False)
+        timming_or, nothing_or = experiment('HILL CLIMBING', 'ORDERED', [5, 10, 25], 1000, [0.2, 0.3, 0.5], 0.75,seed, True, 5)
+
+        gains_init_on = initial_state_on.heuristic()
+        gains_fin_on = n_on.heuristic()
+
+        gains_init_or = initial_state_or.heuristic()
+        gains_fin_or = n_or.heuristic()
+
+        timming_on /= 5
+        timming_or /= 5
+
+        gains_inits_on.append(gains_init_on)
+        gains_fins_on.append(gains_fin_on)
+        timmings_on.append(timming_on)
+
+        gains_inits_or.append(gains_init_or)
+        gains_fins_or.append(gains_fin_or)
+        timmings_or.append(timming_or)
+
+    df["Seed"] = seeds
+    df["initial_gains_on"] = gains_inits_on
+    df["final_gains_on"] = gains_fins_on
+    df["mean_time_on"] = timmings_on
+
+    df["initial_gains_or"] = gains_inits_or
+    df["final_gains_or"] = gains_fins_or
+    df["mean_time_or"] = timmings_or
+
+    return df
+
+#print(exp2())
+
+def exp3():
+    df = pd.DataFrame()
+    seeds = [134,34,556,9012,4321,12,346,762,987,222]
+    it = []
+    timmings = []
+    a = 0.13
+    b = 0.25
+    c = 0.63
+    n = 40
+
+    for i in seeds:
+        seed = i
+        for _ in range(5):
+            c1 = 0
+            c2 = 0
+            c3 = 0
+            c1 += a * n
+            c2 += b * n
+            c3 += c * n
+            c1 = round(c1); c2 = round(c2); c3 = round(c3)
+            print(f"Iteració de la llavor {seed} amb {c1+c2+c3} centrals")
+            timming, nothing = experiment('HILL CLIMBING', 'ONLY GRANTED', [c1, c2, c3], 1000, [0.2, 0.3, 0.5], 0.75, seed, True,5)
+            timming /= 5
+            timmings.append(timming)
+            print(timming)
+            it.append((seed,a+b+c))
+            n += 40
+
+    df["iteracions"] = it
+    df["mean_time"] = timmings
+    return df
+
+print(exp3())
