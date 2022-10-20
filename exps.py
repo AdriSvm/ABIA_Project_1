@@ -13,11 +13,11 @@ def exp1():
     timmings = []
     for i in seeds:
         seed = i
-        initial_state, n = experiment('HILL CLIMBING', 'ONLY GRANTED', [5, 10, 25], 1000, [0.2, 0.3, 0.5], 0.75, seed, False)
-        timming, nothing = experiment('HILL CLIMBING', 'ONLY GRANTED', [5, 10, 25], 1000, [0.2, 0.3, 0.5], 0.75, seed, True,5)
+        initial_state, n = experiment('HILL CLIMBING', 'ORDERED', [5, 10, 25], 1000, [0.2, 0.3, 0.5], 0.75, seed, False)
+        timming, nothing = experiment('HILL CLIMBING', 'ORDERED', [5, 10, 25], 1000, [0.2, 0.3, 0.5], 0.75, seed, True,10)
         gains_init = initial_state.heuristic()
         gains_fin = n.heuristic()
-        timming /= 5
+        timming /= 10
         gains_inits.append(gains_init)
         gains_fins.append(gains_fin)
         timmings.append(timming)
@@ -27,7 +27,7 @@ def exp1():
     df["mean_time"] = timmings
     return df
 
-#print(exp1())
+print(exp1())
 
 def exp2():
     df = pd.DataFrame()
@@ -105,5 +105,3 @@ def exp4():
     df["iteracions"] = it
     df["mean_time"] = timmings
     return df
-
-print(exp4())

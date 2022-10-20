@@ -231,7 +231,6 @@ class StateRepresentation(object):
         '''
 
     def generate_actions(self):
-
         #InsertClient
         if len(self.left) > 0:
             cl = self.left[0]
