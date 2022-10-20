@@ -79,25 +79,28 @@ def exp2():
 
 def exp4():
     df = pd.DataFrame()
-    seeds = [34,556,9012,4321,12,346,762,987,222]
+    seeds = [134,34,556,9012,4321,12,346,762,987,222]
     it = []
     timmings = []
 
-    for i in seeds:
-        seed = i
-        n = 40
-        for _ in range(5):
+    n = 240
+    for _ in range(10):
+        for i in seeds[4:]:
+            seed = i
             c1 = 0.13 * n
             c2 = 0.25 * n
             c3 = 0.63 * n
-            c1 = round(c1); c2 = round(c2); c3 = round(c3)
-            print(f"Iteració de la llavor {seed} amb {c1+c2+c3} centrals amb una distribució {[c1,c2,c3]}")
-            timming, nothing = experiment('HILL CLIMBING', 'ONLY GRANTED', [c1, c2, c3], 1000, [0.2, 0.3, 0.5], 0.75, seed, True,5)
-            timming /= 5
+            c1 = round(c1)
+            c2 = round(c2)
+            c3 = round(c3)
+            print(f"Iteració de la llavor {seed} amb {c1 + c2 + c3} centrals amb una distribució {[c1, c2, c3]}")
+            timming, nothing = experiment('HILL CLIMBING', 'ONLY GRANTED', [c1, c2, c3], 1000, [0.2, 0.3, 0.5], 0.75,
+                                          seed, True, 7)
+            timming /= 7
             timmings.append(timming)
             print(timming)
-            it.append((seed,c1+c2+c3))
-            n += 40
+            it.append((seed, c1 + c2 + c3))
+        n += 40
 
     df["iteracions"] = it
     df["mean_time"] = timmings

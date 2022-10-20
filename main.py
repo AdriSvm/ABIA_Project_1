@@ -59,6 +59,7 @@ class SwapClients(Operators):
 def distance(a:tuple,b:tuple) -> float:
     return sqrt(((a[0]-b[0])**2) + ((a[1]-b[1])**2))
 
+
 def clients_power(client:int, dicc:dict, clients:Clientes, centrals: Centrales, central = None) -> float:
     if central == None:
         for c in dicc:
@@ -115,11 +116,15 @@ class StateRepresentation(object):
     def __repr__(self) -> str:
         lst = []
         for i in range(len(self.centrals)):
-            lst.append((i, [x for x in self.dict[i]]))
+            lst.append((i, len([x for x in self.dict[i]])))
             self.gains = self.heuristic()
-        return f"Llista de tuples on el primer element és la central i el segon la llista de clients que té assignats: \n {lst} " \
+        wo_power = []
+        for i in range(len(self.states)):
+            if self.states[i] == False:
+                wo_power.append(i)
+        return f"Llista de tuples on el primer element és la central i el segon la quantitat de clients assignats: \n {lst} " \
                f"\n i té uns beneficis de {self.gains}" \
-               f"\n Els clients que no estàn assignats a cap central són: \n {len(self.left)}"
+               f"\n Els clients que no estàn assignats a cap central són: \n {len(self.left)} \ni no tenen electricitat: \n {[self.dict[x] for x in wo_power]}"
 
     def generate_one_action(self):
         intro_cl_comb = set()
@@ -259,8 +264,6 @@ class StateRepresentation(object):
 
             if c_fin != None:
                 yield MoveClient(cl, c_init, c_fin)
-        '''
-
 
 
         #modificación swap central state
@@ -269,31 +272,37 @@ class StateRepresentation(object):
             for cl in self.dict[c]:
                 if self.clients[cl].Contrato == 0 and not exist_granted:
                     exist_granted = True
-                    
+
             if not exist_granted:
                 gains = 0
+                ind = 0
                 for cl in self.dict[c]:
                     gains += VEnergia.tarifa_cliente_no_garantizada(self.clients[cl].Tipo) * self.clients[cl].Consumo
+                    ind += VEnergia.tarifa_cliente_penalizacion(self.clients[cl].Tipo) * self.clients[cl].Consumo
 
-                gains -= VEnergia.daily_cost(self.centrals[c].Tipo)
-                gains -= VEnergia.costs_production_mw(self.centrals[c].Tipo) * self.centrals[c].Produccion
+                if self.states[c]:
+                    gains -= VEnergia.daily_cost(self.centrals[c].Tipo)
+                    gains -= VEnergia.costs_production_mw(self.centrals[c].Tipo) * self.centrals[c].Produccion
+                else:
+                    gains -= VEnergia.stop_cost(self.centrals[c].Tipo)
+
+
 
                 if gains < 0:
                     if self.states[c] == False:
                         pass
                     else:
                         coste_enc = VEnergia.daily_cost(self.centrals[c].Tipo) + (VEnergia.costs_production_mw(self.centrals[c].Tipo) * self.centrals[c].Produccion)
-                        coste_ap = VEnergia.stop_cost(self.centrals[c].Tipo)
+                        coste_ap = VEnergia.stop_cost(self.centrals[c].Tipo) + ind
+
                         if coste_ap < coste_enc:
                             yield SwapState(c, False)
-                        else:
-                            yield SwapState(c, True)
                 else:
                     yield SwapState(c, True)
             else:
                 if not self.states[c]:
                     yield SwapState(c, True)
-        '''
+
         '''
         # Echange two clients
         for central in self.dict:
@@ -359,6 +368,7 @@ class StateRepresentation(object):
 
                 if self.states[c] == False:
                     self.gains -= VEnergia.tarifa_cliente_penalizacion(type) * consump
+                    self.gains += VEnergia.tarifa_cliente_no_garantizada(type) * consump
                 else:
                     if deal == 0:
                         self.gains += VEnergia.tarifa_cliente_garantizada(type) * consump
@@ -543,7 +553,6 @@ def experiment(algorithm:str, method:str, n_c:list[int],n_cl:int,propcl:list[flo
 
     if timming != False:
         if algorithm == 'HILL CLIMBING':
-            print("adeu)")
             if method == 'ORDERED':
                 #print(
                 #    f'''Els temps és de {timeit.timeit(lambda: hill_climbing(CentralDistributionProblem
@@ -578,7 +587,8 @@ def experiment(algorithm:str, method:str, n_c:list[int],n_cl:int,propcl:list[flo
     return initial_state, n
 
 
-#experiment('HILL CLIMBING','ORDERED',[5, 10, 25],1000, [0.2, 0.3, 0.5], 0.5, 22)
+#initial_state, n = experiment('HILL CLIMBING','ONLY GRANTED',[5, 10, 25],1000, [0.2, 0.3, 0.5], 0.75, 1234,True,1)
+#print(initial_state)
 #time, n = experiment('HILL CLIMBING','ONLY GRANTED',[5, 10, 25],1000, [0.2, 0.3, 0.5], 0.75, 1234,True,5)
 #print(time/5)
 
