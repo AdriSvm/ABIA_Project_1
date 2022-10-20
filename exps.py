@@ -83,9 +83,9 @@ def exp4():
     it = []
     timmings = []
 
-    n = 240
+    n = 320
     for _ in range(10):
-        for i in seeds[4:]:
+        for i in seeds[3:]:
             seed = i
             c1 = 0.13 * n
             c2 = 0.25 * n
