@@ -521,32 +521,31 @@ def experiment(algorithm:str, method:str, n_c:list[int],n_cl:int,propcl:list[flo
             if method == 'ORDERED':
                 initial_state = gen_initial_state_ordered(Parameters(n_c,n_cl,propcl,propg,seed))
                 n = hill_climbing(CentralDistributionProblem(initial_state))
-                print(f"La representació del estat inicial és aquesta \n {initial_state}")
+                #print(f"La representació del estat inicial és aquesta \n {initial_state}")
 
-                print(f" La representació del estat final és aquesta \n {n}")
+                #print(f" La representació del estat final és aquesta \n {n}")
 
             elif method == 'ONLY GRANTED':
                 initial_state = gen_initial_state_only_granted(Parameters(n_c, n_cl, propcl, propg, seed))
                 n = hill_climbing(CentralDistributionProblem(initial_state))
-                print(f"La representació del estat inicial és aquesta \n {initial_state}")
+                #print(f"La representació del estat inicial és aquesta \n {initial_state}")
 
-                print(f" La representació del estat final és aquesta \n {n}")
+                #print(f" La representació del estat final és aquesta \n {n}")
 
         elif algorithm == 'SIMULATED ANNEALING':
             if method == 'ORDERED':
                 initial_state = gen_initial_state_ordered(Parameters(n_c,n_cl,propcl,propg,seed))
                 n = simulated_annealing(CentralDistributionProblem(initial_state), schedule=exp_schedule(k= 1, lam= 0.005, limit=2400))
-                print(f"La representació del estat inicial és aquesta \n {initial_state}")
+                #print(f"La representació del estat inicial és aquesta \n {initial_state}")
 
-                print(f" La representació del estat final és aquesta \n {n}")
+                #print(f" La representació del estat final és aquesta \n {n}")
 
             elif method == 'ONLY GRANTED':
-                print("Calculant algorisme")
                 initial_state = gen_initial_state_only_granted(Parameters(n_c, n_cl, propcl, propg, seed))
                 n = simulated_annealing(CentralDistributionProblem(initial_state), schedule=exp_schedule(k= 1, lam= 0.005, limit=2400))
-                print(f"La representació del estat inicial és aquesta \n {initial_state}")
+                #print(f"La representació del estat inicial és aquesta \n {initial_state}")
 
-                print(f" La representació del estat final és aquesta \n {n}")
+                #print(f" La representació del estat final és aquesta \n {n}")
         if timming != False:
             timming = True
 
@@ -582,7 +581,6 @@ def experiment(algorithm:str, method:str, n_c:list[int],n_cl:int,propcl:list[flo
                                                               Parameters(n_c, n_cl, propcl, propg, seed))), schedule=exp_schedule(k= 1, lam= 0.005, limit=2400)), number=n_iter), False
     if initial_state == None or n == None:
         raise Exception("Error executing")
-    print(initial_state,n)
     return initial_state, n
 
 
