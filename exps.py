@@ -7,15 +7,15 @@ Fitxer per realitzar els diversos experiments
 #Experiment 1
 def exp1():
     df = pd.DataFrame()
-    seeds = [245,39,678,1345,239,29,568,1422,991,132]
+    seeds = [399,289,393,387,410,591,906,986,31,51]
     gains_inits = []
     gains_fins = []
     timmings = []
     for i in seeds:
         seed = i
         print(f"Doing exp1 with seed {seed}, number {seeds.index(seed)+1} of {len(seeds)}")
-        initial_state, n = experiment('HILL CLIMBING', 'ORDERED', [5, 10, 25], 1000, [0.2, 0.3, 0.5], 0.75, seed, False)
-        timming, nothing = experiment('HILL CLIMBING', 'ORDERED', [5, 10, 25], 1000, [0.2, 0.3, 0.5], 0.75, seed, True,7)
+        initial_state, n = experiment('HILL CLIMBING', 'ONLY GRANTED', [5, 10, 25], 1000, [0.2, 0.3, 0.5], 0.75, seed, False)
+        timming, nothing = experiment('HILL CLIMBING', 'ONLY GRANTED', [5, 10, 25], 1000, [0.2, 0.3, 0.5], 0.75, seed, True,7)
         gains_init = initial_state.heuristic()
         gains_fin = n.heuristic()
         timming /= 7
@@ -28,7 +28,7 @@ def exp1():
     df["mean_time"] = timmings
     return df
 
-#print(exp1())
+print(exp1())
 
 def exp2():
     df = pd.DataFrame()
@@ -84,7 +84,7 @@ def exp4():
     it = []
     timmings = []
 
-    n = 320
+    n = 360
     for _ in range(10):
         for i in seeds[3:]:
             seed = i
@@ -107,4 +107,4 @@ def exp4():
     df["mean_time"] = timmings
     return df
 
-print(exp4())
+#print(exp4())

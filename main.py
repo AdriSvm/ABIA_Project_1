@@ -231,6 +231,7 @@ class StateRepresentation(object):
         '''
 
     def generate_actions(self):
+
         #InsertClient
         if len(self.left) > 0:
             cl = self.left[0]
@@ -244,7 +245,7 @@ class StateRepresentation(object):
                     c = i
 
             yield InsertClient(cl,c)
-
+        '''
         # Move client to another central
         for cl in range(len(self.clients)):
             c_fin = None
@@ -264,7 +265,7 @@ class StateRepresentation(object):
             if c_fin != None:
                 yield MoveClient(cl, c_init, c_fin)
 
-
+        '''
         #modificación swap central state
         for c in self.dict:
             exist_granted = False
@@ -584,8 +585,8 @@ def experiment(algorithm:str, method:str, n_c:list[int],n_cl:int,propcl:list[flo
     return initial_state, n
 
 
-#initial_state, n = experiment('HILL CLIMBING','ONLY GRANTED',[5, 10, 25],1000, [0.2, 0.3, 0.5], 0.75, 1234,True,1)
-#print(initial_state)
+initial_state, n = experiment('HILL CLIMBING','ONLY GRANTED',[5, 10, 25],1000, [0.2, 0.3, 0.5], 0.75, 1234)
+print(initial_state,n)
 #time, n = experiment('HILL CLIMBING','ONLY GRANTED',[5, 10, 25],1000, [0.2, 0.3, 0.5], 0.75, 1234,True,5)
 #print(time/5)
 
