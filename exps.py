@@ -1,7 +1,8 @@
 from main import *
 import pandas as pd
 '''
-Fitxer per realitzar els diversos experiments
+File only for executing all experiments, used for tests.
+It doesn't output all the experiments results at once, changes made after each executing, like changing operators.
 '''
 
 #Experiment 1
@@ -28,7 +29,7 @@ def exp1():
     df["mean_time"] = timmings
     return df
 
-print(exp1())
+#print(exp1())
 
 def exp2():
     df = pd.DataFrame()
@@ -84,9 +85,9 @@ def exp4():
     it = []
     timmings = []
 
-    n = 360
-    for _ in range(10):
-        for i in seeds[3:]:
+    n = 40
+    for _ in range(15):
+        for i in seeds:
             seed = i
             c1 = 0.13 * n
             c2 = 0.25 * n
@@ -96,8 +97,8 @@ def exp4():
             c3 = round(c3)
             print(f"Iteració de la llavor {seed} amb {c1 + c2 + c3} centrals amb una distribució {[c1, c2, c3]}")
             timming, nothing = experiment('HILL CLIMBING', 'ONLY GRANTED', [c1, c2, c3], 1000, [0.2, 0.3, 0.5], 0.75,
-                                          seed, True, 7)
-            timming /= 7
+                                          seed, True, 10)
+            timming /= 10
             timmings.append(timming)
             print(timming)
             it.append((seed, c1 + c2 + c3))
@@ -107,4 +108,4 @@ def exp4():
     df["mean_time"] = timmings
     return df
 
-#print(exp4())
+d = exp4()
