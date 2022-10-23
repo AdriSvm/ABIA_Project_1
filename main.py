@@ -225,7 +225,7 @@ class StateRepresentation(object):
                     c = i
 
             intro_cl_comb.add((cl, c))
-
+        '''
         # Move client
         move_cl_comb = set()
         for cl in range(len(self.clients)):
@@ -246,7 +246,7 @@ class StateRepresentation(object):
 
                 if c_fin is not None and c_init is not None:
                     move_cl_comb.add((cl, c_init, c_fin))
-
+        '''
         # Swap state
         swap_state_comb = set()
         for c in self.dict:
@@ -564,8 +564,8 @@ def gen_initial_state_ordered(params: Parameters) -> StateRepresentation:
         c = 0
         placed = False
         while c < len(centrals) and not placed:
-            if power_left(c, state_dict, clients, centrals) < clients_power(clients_granted[0][0], state_dict, clients,
-                                                                            centrals, c):
+            if power_left(c, state_dict, clients, centrals) < \
+                    clients_power(clients_granted[0][0], state_dict, clients,centrals, c):
                 c += 1
                 if c == len(centrals) - 1:
                     end = True
@@ -580,8 +580,8 @@ def gen_initial_state_ordered(params: Parameters) -> StateRepresentation:
         c = 0
         placed = False
         while c < len(centrals) and not placed:
-            if power_left(c, state_dict, clients, centrals) < clients_power(clients_no_granted[0][0], state_dict,
-                                                                            clients, centrals, c):
+            if power_left(c, state_dict, clients, centrals) < \
+                    clients_power(clients_no_granted[0][0], state_dict,clients, centrals, c):
                 c += 1
                 if c == len(centrals) - 1:
                     end = True

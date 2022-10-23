@@ -17,10 +17,10 @@
    <widget class="QPushButton" name="btn_init_state">
     <property name="geometry">
      <rect>
-      <x>20</x>
-      <y>750</y>
-      <width>181</width>
-      <height>101</height>
+      <x>10</x>
+      <y>560</y>
+      <width>171</width>
+      <height>51</height>
      </rect>
     </property>
     <property name="font">
@@ -35,10 +35,10 @@
    <widget class="QPushButton" name="btn_fin_state">
     <property name="geometry">
      <rect>
-      <x>280</x>
-      <y>750</y>
-      <width>201</width>
-      <height>101</height>
+      <x>210</x>
+      <y>560</y>
+      <width>171</width>
+      <height>51</height>
      </rect>
     </property>
     <property name="font">
@@ -53,10 +53,10 @@
    <widget class="QLabel" name="pixelmap">
     <property name="geometry">
      <rect>
-      <x>500</x>
+      <x>390</x>
       <y>30</y>
       <width>1461</width>
-      <height>1061</height>
+      <height>361</height>
      </rect>
     </property>
     <property name="text">
@@ -566,6 +566,24 @@
       </property>
      </item>
     </widget>
+   </widget>
+   <widget class="QLabel" name="txt_bens">
+    <property name="geometry">
+     <rect>
+      <x>390</x>
+      <y>540</y>
+      <width>331</width>
+      <height>91</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>11</pointsize>
+     </font>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
    </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">
