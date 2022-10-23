@@ -43,7 +43,7 @@ $ cd ABIA_Project_1
 
 #Dive into files and explore
 #For the graphical interface for Windows10-11
-$ ./Central Distribution
+$ ./Central_Distribution
 
 #If you want a more console based
 $ python3
