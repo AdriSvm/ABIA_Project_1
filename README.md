@@ -27,7 +27,7 @@ Intelligence of the third semester of the degree of artificial intelligence of t
     - For any contact related of the useof the program, you can contact us by email
     - You can also find us in Linkedin:
         - Adrià Moya: www.linkedin.com/in/adrià-moya
-        - Daniel Poch: www.linkedin.com/in/daniel-spiridonov-poch-a1b3021a7
+        - Daniel Poch: www.linkedin.com/in/daniel-poch
 
 ## How to download and run 
 
