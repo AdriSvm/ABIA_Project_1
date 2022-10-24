@@ -80,7 +80,12 @@ See informe.pdf for more information.
 
 ## Emailware
 
-Central Distribution is an [emailware](https://en.wiktionary.org/wiki/emailware). Meaning, if you liked using this app or it has helped you in any way, I'd like you send me an email at any of our emails, about anything you'd want to say about this software. I'd really appreciate it!
+Central Distribution is an [emailware](https://en.wiktionary.org/wiki/emailware). Meaning, if you liked using this app or it has helped you in any way, we'd like you send us an email at any of our emails, about anything you'd want to say about this software. We'd really appreciate it!
+
+## Credits
+
+* Icon used for graphical version <a href="https://www.flaticon.com/free-icons/energy" title="energy icons">Energy icons created by Freepik - Flaticon</a>
+
 
 ## License
 
