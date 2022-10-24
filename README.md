@@ -28,6 +28,7 @@ Intelligence of the third semester of the degree of artificial intelligence of t
     - You can also find us in Linkedin:
         - Adrià Moya: www.linkedin.com/in/adrià-moya
         - Daniel Poch: www.linkedin.com/in/daniel-poch
+        - Javier Puerta: www.linkedin.com/in/javier-puerta
 
 ## How to download and run 
 
