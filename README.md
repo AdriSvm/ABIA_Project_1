@@ -27,7 +27,8 @@ Intelligence of the third semester of the degree of artificial intelligence of t
     - For any contact related of the useof the program, you can contact us by email
     - You can also find us in Linkedin:
         - Adrià Moya: www.linkedin.com/in/adrià-moya
-        - Daniel Poch: www.linkedin.com/in/daniel-spiridonov-poch-a1b3021a7
+        - Daniel Poch: www.linkedin.com/in/daniel-poch
+        - Javier Puerta: www.linkedin.com/in/javier-puerta
 
 ## How to download and run 
 
@@ -80,7 +81,12 @@ See informe.pdf for more information.
 
 ## Emailware
 
-Central Distribution is an [emailware](https://en.wiktionary.org/wiki/emailware). Meaning, if you liked using this app or it has helped you in any way, I'd like you send me an email at any of our emails, about anything you'd want to say about this software. I'd really appreciate it!
+Central Distribution is an [emailware](https://en.wiktionary.org/wiki/emailware). Meaning, if you liked using this app or it has helped you in any way, we'd like you send us an email at any of our emails, about anything you'd want to say about this software. We'd really appreciate it!
+
+## Credits
+
+* Icon used for graphical version <a href="https://www.flaticon.com/free-icons/energy" title="energy icons">Energy icons created by Freepik - Flaticon</a>
+
 
 ## License
 
