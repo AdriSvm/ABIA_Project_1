@@ -16,10 +16,10 @@ def exp1():
         seed = i
         print(f"Doing exp1 with seed {seed}, number {seeds.index(seed)+1} of {len(seeds)}")
         initial_state, n = experiment('HILL CLIMBING', 'ONLY GRANTED', [5, 10, 25], 1000, [0.2, 0.3, 0.5], 0.75, seed, False)
-        timming, nothing = experiment('HILL CLIMBING', 'ONLY GRANTED', [5, 10, 25], 1000, [0.2, 0.3, 0.5], 0.75, seed, True,7)
+        timming, nothing = experiment('HILL CLIMBING', 'ONLY GRANTED', [5, 10, 25], 1000, [0.2, 0.3, 0.5], 0.75, seed, True,1)
         gains_init = initial_state.heuristic()
         gains_fin = n.heuristic()
-        timming /= 7
+        print(timming)
         gains_inits.append(gains_init)
         gains_fins.append(gains_fin)
         timmings.append(timming)

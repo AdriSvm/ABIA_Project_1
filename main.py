@@ -225,12 +225,11 @@ class StateRepresentation(object):
                     c = i
 
             intro_cl_comb.add((cl, c))
-        '''
-        # Move client
+
+        '''# Move client to another central
         move_cl_comb = set()
         for cl in range(len(self.clients)):
             c_fin = None
-            c_init = None
             if cl not in self.left:
                 cons_cl = clients_power(cl, self.dict, self.clients, self.centrals)
 
@@ -244,9 +243,8 @@ class StateRepresentation(object):
                         cons_cl = cons_cl_fin
                         c_fin = c
 
-                if c_fin is not None and c_init is not None:
-                    move_cl_comb.add((cl, c_init, c_fin))
-        '''
+            if c_fin != None:
+                move_cl_comb.add((cl, c_init, c_fin))'''
         # Swap state
         swap_state_comb = set()
         for c in self.dict:
@@ -280,38 +278,17 @@ class StateRepresentation(object):
                 if not self.states[c]:
                     swap_state_comb.add((c, True))
 
-        m = len(move_cl_comb)
-        i = len(intro_cl_comb)
         s = len(swap_state_comb)
+        i = len(intro_cl_comb)
 
         random_value = random.random()
-        if random_value < (m / (i + m + s)):
-            combination = random.choice(list(move_cl_comb))
-            yield MoveClient(combination[0], combination[1], combination[2])
-
-        elif (m / (i + m + s)) <= random_value <= (i / (i + m + s)):
+        if random_value < (i / (i + s)):
             combination = random.choice(list(intro_cl_comb))
             yield InsertClient(combination[0], combination[1])
 
         else:
             combination = random.choice(list(swap_state_comb))
             yield SwapState(combination[0], combination[1])
-
-        '''
-        #Echange clients
-        for central in self.dict:
-            for client in self.dict[central]:
-                for sec_central in self.dict:
-                    if sec_central != central:
-                        for sec_client in self.dict[sec_central]:
-                            if sec_client != client:
-                                pl1=power_left(sec_central, self.dict, self.clients, self.centrals)
-                                pl2=power_left(central, self.dict, self.clients, self.centrals)
-                                if clients_power(client, self.dict, self.clients, self.centrals) < pl1 \
-                                    and clients_power(sec_client, self.dict, self.clients, self.centrals) < pl2 \
-                                    and pl1 > 0 and pl2 > 0:
-                                    yield SwapClients(client,central,sec_client,sec_central)
-        '''
 
     def generate_actions(self):
         """
@@ -565,7 +542,7 @@ def gen_initial_state_ordered(params: Parameters) -> StateRepresentation:
         placed = False
         while c < len(centrals) and not placed:
             if power_left(c, state_dict, clients, centrals) < \
-                    clients_power(clients_granted[0][0], state_dict, clients,centrals, c):
+                    clients_power(clients_granted[0][0], state_dict, clients, centrals, c):
                 c += 1
                 if c == len(centrals) - 1:
                     end = True
@@ -581,7 +558,7 @@ def gen_initial_state_ordered(params: Parameters) -> StateRepresentation:
         placed = False
         while c < len(centrals) and not placed:
             if power_left(c, state_dict, clients, centrals) < \
-                    clients_power(clients_no_granted[0][0], state_dict,clients, centrals, c):
+                    clients_power(clients_no_granted[0][0], state_dict, clients, centrals, c):
                 c += 1
                 if c == len(centrals) - 1:
                     end = True
@@ -651,7 +628,7 @@ class CentralDistributionProblem(Problem):
 
 
 def experiment(algorithm: str, method: str, n_c: list[int], n_cl: int, propcl: list[float], propg: float, seed: int,
-               timming=False, n_iter=5):
+               k=5, limit=750, lam=0.0005, timming=False, n_iter=5):
     """
     Auxiliary function for making easy the experiments executions.
     USE ONLY FOR HILL CLIMBING AND SIMULATED ANNEALING.
@@ -675,13 +652,13 @@ def experiment(algorithm: str, method: str, n_c: list[int], n_cl: int, propcl: l
         elif algorithm == 'SIMULATED ANNEALING':
             if method == 'ORDERED':
                 initial_state = gen_initial_state_ordered(Parameters(n_c, n_cl, propcl, propg, seed))
-                n = simulated_annealing(CentralDistributionProblem(initial_state),
-                                        schedule=exp_schedule(k=1, lam=0.005, limit=2400))
+                n = simulated_annealing(CentralDistributionProblem(initial_state, use_one_action=True),
+                                        schedule=exp_schedule(k=k, lam=lam, limit=limit))
 
             elif method == 'ONLY GRANTED':
                 initial_state = gen_initial_state_only_granted(Parameters(n_c, n_cl, propcl, propg, seed))
-                n = simulated_annealing(CentralDistributionProblem(initial_state),
-                                        schedule=exp_schedule(k=1, lam=0.005, limit=2400))
+                n = simulated_annealing(CentralDistributionProblem(initial_state, use_one_action=True),
+                                        schedule=exp_schedule(k=k, lam=lam, limit=limit))
 
         if timming:
             timming = True
@@ -700,14 +677,14 @@ def experiment(algorithm: str, method: str, n_c: list[int], n_cl: int, propcl: l
         elif algorithm == 'SIMULATED ANNEALING':
             if method == 'ORDERED':
                 return timeit.timeit(lambda: simulated_annealing(CentralDistributionProblem(gen_initial_state_ordered(
-                    Parameters(n_c, n_cl, propcl, propg, seed))),
-                    schedule=exp_schedule(k=1, lam=0.005, limit=2400)),
+                    Parameters(n_c, n_cl, propcl, propg, seed)), use_one_action=True),
+                    schedule=exp_schedule(k=k, lam=lam, limit=limit)),
                                      number=n_iter), False
             if method == 'ONLY GRANTED':
                 return timeit.timeit(
                     lambda: simulated_annealing(CentralDistributionProblem(gen_initial_state_only_granted(
-                        Parameters(n_c, n_cl, propcl, propg, seed))),
-                        schedule=exp_schedule(k=1, lam=0.005, limit=2400)),
+                        Parameters(n_c, n_cl, propcl, propg, seed)), use_one_action=True),
+                        schedule=exp_schedule(k=k, lam=lam, limit=limit)),
                     number=n_iter), False
 
     if initial_state is None or n is None:
