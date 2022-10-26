@@ -134,7 +134,7 @@ class StateRepresentation(object):
         """
         Necessary args for representation
         clients: Clients class with representation of all clients
-        centrals: Centrals class with representation of all centrals
+        centrals: Centrals class with representation of all power plants
         dict: Dictionary, len(dict) = len(centrals), int: set(), 0 to n centrals, each with one set
         States: list[Bool], len(states) = len(centrals), Bool indicates if central n its ON or OFF
         left: list[int], all clients not assigned to a central, there can't be granted clients to assure safe solution
@@ -383,9 +383,6 @@ class StateRepresentation(object):
                             yield SwapState(c, False)
                 else:
                     yield SwapState(c, True)
-            else:
-                if not self.states[c]:
-                    yield SwapState(c, True)
 
         '''
         # Echange clients
@@ -479,6 +476,37 @@ class StateRepresentation(object):
         # print(self.gains)
         return self.gains
 
+    def heuristic_p5(self, x: int = 0) -> float:
+        self.gains = 0
+        self.x = x
+
+        for c in self.dict:
+            for cl in self.dict[c]:
+                client = self.clients[cl]
+                type = client.Tipo
+                consump = client.Consumo
+                deal = client.Contrato
+
+                if self.states[c] == False:
+                    self.gains -= VEnergia.tarifa_cliente_penalizacion(type) * consump
+                else:
+                    if deal == 0:
+                        self.gains += VEnergia.tarifa_cliente_garantizada(type) * consump
+                    else:
+                        self.gains += VEnergia.tarifa_cliente_no_garantizada(type) * consump
+
+            if self.states[c] == False:
+                self.gains -= VEnergia.stop_cost(self.centrals[c].Tipo)
+            else:
+                self.gains -= VEnergia.daily_cost(self.centrals[c].Tipo)
+                self.gains -= VEnergia.costs_production_mw(self.centrals[c].Tipo) * self.centrals[c].Produccion
+
+        for cl in self.left:
+            self.gains -= VEnergia.tarifa_cliente_penalizacion(self.clients[cl].Tipo) * self.clients[cl].Consumo
+
+        garan = [x for x in filter(lambda x: self.clients[x].Contrato == 0, self.left)]
+
+        return self.gains - self.x * len(garan)
 
 def gen_initial_state_only_granted(params: Parameters) -> StateRepresentation:
     """
@@ -595,9 +623,19 @@ def gen_initial_state_empty(params: Parameters) -> StateRepresentation:
     centrals = Centrales(params.n_c, params.seed)
     state_dict = {i: set() for i in range(len(centrals))}
     states = [True for _ in range(len(centrals))]
-    clients_no_granted = [x for x in range(len(clients))]
+    clients_no_granted = []
+    clients_granted = []
 
-    return StateRepresentation(clients, centrals, state_dict, states, clients_no_granted)
+    for cl in range(len(clients)):
+        if clients[cl].Contrato == 0:
+            clients_granted.append(cl)
+
+        else:
+            clients_no_granted.append(cl)
+
+    clients_mixed = clients_granted + clients_no_granted
+
+    return StateRepresentation(clients, centrals, state_dict, states, clients_mixed)
 
 
 class CentralDistributionProblem(Problem):
@@ -606,8 +644,10 @@ class CentralDistributionProblem(Problem):
     use_one_action, True for Simulated annealing algorithm.
     """
 
-    def __init__(self, initial_state: StateRepresentation, use_one_action: Boolean = False):
+    def __init__(self, initial_state: StateRepresentation, use_one_action: Boolean = False, use_p5: Boolean = False, pen: int = 0):
         self.action = use_one_action
+        self.use_p5 = use_p5
+        self.pen = pen
         super().__init__(initial_state)
 
     def actions(self, state: StateRepresentation) -> Generator[Operators, None, None]:
@@ -621,14 +661,17 @@ class CentralDistributionProblem(Problem):
         return state.apply_action(action)
 
     def value(self, state: StateRepresentation) -> float:
-        return state.heuristic()
+        if self.use_p5:
+            return state.heuristic_p5(x=self.pen)
+        else:
+            return state.heuristic()
 
     def goal_test(self, state: StateRepresentation) -> bool:
         return False
 
 
 def experiment(algorithm: str, method: str, n_c: list[int], n_cl: int, propcl: list[float], propg: float, seed: int,
-               k=5, limit=750, lam=0.0005, timming=False, n_iter=5):
+               k=5, limit=750, lam=0.0005, timming=False, n_iter=5, x=0):
     """
     Auxiliary function for making easy the experiments executions.
     USE ONLY FOR HILL CLIMBING AND SIMULATED ANNEALING.
@@ -649,6 +692,13 @@ def experiment(algorithm: str, method: str, n_c: list[int], n_cl: int, propcl: l
                 initial_state = gen_initial_state_only_granted(Parameters(n_c, n_cl, propcl, propg, seed))
                 n = hill_climbing(CentralDistributionProblem(initial_state))
 
+            elif method == 'PROBLEM 5':
+                initial_state = gen_initial_state_empty(Parameters(n_c, n_cl, propcl, propg, seed))
+                n = hill_climbing(CentralDistributionProblem(initial_state, False, True, x))
+                print(f"La representació del estat inicial és aquesta \n {initial_state}")
+
+                print(f" La representació del estat final és aquesta \n {n}")
+
         elif algorithm == 'SIMULATED ANNEALING':
             if method == 'ORDERED':
                 initial_state = gen_initial_state_ordered(Parameters(n_c, n_cl, propcl, propg, seed))
@@ -660,6 +710,16 @@ def experiment(algorithm: str, method: str, n_c: list[int], n_cl: int, propcl: l
                 n = simulated_annealing(CentralDistributionProblem(initial_state, use_one_action=True),
                                         schedule=exp_schedule(k=k, lam=lam, limit=limit))
 
+            elif method == 'PROBLEM 5':
+                print("Calculant algorisme")
+                initial_state = gen_initial_state_empty(Parameters(n_c, n_cl, propcl, propg, seed))
+                n = simulated_annealing(CentralDistributionProblem(initial_state, True, True, x),
+                                        schedule=exp_schedule(k=10, lam=0.005, limit=1000))
+                print(f"La representació del estat inicial és aquesta \n {initial_state}")
+
+                print(f" La representació del estat final és aquesta \n {n}")
+
+
         if timming:
             timming = True
 
@@ -670,22 +730,44 @@ def experiment(algorithm: str, method: str, n_c: list[int], n_cl: int, propcl: l
                                                                                       (Parameters(n_c, n_cl, propcl,
                                                                                                   propg, seed)))),
                                      number=n_iter), False
-            if method == 'ONLY GRANTED':
+
+            elif method == 'ONLY GRANTED':
                 return timeit.timeit(lambda: hill_climbing(CentralDistributionProblem(gen_initial_state_only_granted(
                     Parameters(n_c, n_cl, propcl, propg, seed)))),
                                      number=n_iter), False
+
+            elif method == 'PROBLEM 5':
+                # print(
+                #    f'''Els temps és de {timeit.timeit(lambda: hill_climbing(CentralDistributionProblem
+                #    (gen_initial_state_only_granted(Parameters([5, 10, 25], 1000, [0.2, 0.3, 0.5], 0.5, 22)))), number=n_iter)}''')
+                return timeit.timeit(lambda: hill_climbing(CentralDistributionProblem
+                                                           (gen_initial_state_empty(Parameters(n_c, n_cl, propcl, propg, seed)), False, True,
+                                                            x)), number=n_iter), False
+
         elif algorithm == 'SIMULATED ANNEALING':
             if method == 'ORDERED':
                 return timeit.timeit(lambda: simulated_annealing(CentralDistributionProblem(gen_initial_state_ordered(
                     Parameters(n_c, n_cl, propcl, propg, seed)), use_one_action=True),
                     schedule=exp_schedule(k=k, lam=lam, limit=limit)),
                                      number=n_iter), False
-            if method == 'ONLY GRANTED':
+
+            elif method == 'ONLY GRANTED':
                 return timeit.timeit(
                     lambda: simulated_annealing(CentralDistributionProblem(gen_initial_state_only_granted(
                         Parameters(n_c, n_cl, propcl, propg, seed)), use_one_action=True),
                         schedule=exp_schedule(k=k, lam=lam, limit=limit)),
                     number=n_iter), False
+
+            elif method == 'PROBLEM 5':
+                print("calculant temps")
+                # print(
+                #    f'''Els temps és de {timeit.timeit(lambda: simulated_annealing(CentralDistributionProblem
+                #    (gen_initial_state_only_granted(Parameters([5, 10, 25], 1000, [0.2, 0.3, 0.5], 0.5, 22)))), number=n_iter)}''')
+                return timeit.timeit(lambda: simulated_annealing(CentralDistributionProblem
+                                                                 (gen_initial_state_empty(Parameters(n_c, n_cl, propcl, propg, seed)), True,
+                                                                  True, x),
+                                                                 schedule=exp_schedule(k=10, lam=0.005, limit=1000)),
+                                     number=n_iter), False
 
     if initial_state is None or n is None:
         raise Exception("Not executed")
@@ -693,9 +775,8 @@ def experiment(algorithm: str, method: str, n_c: list[int], n_cl: int, propcl: l
 
 
 def main():
-    initial_state, n = experiment('HILL CLIMBING', 'ONLY GRANTED', [5, 10, 25], 1000, [0.2, 0.3, 0.5], 0.75, 1234)
+    initial_state, n = experiment('HILL CLIMBING', 'PROBLEM 5', [5, 10, 25], 1000, [0.2, 0.3, 0.5], 0.75, 22, x=2000)
     print(initial_state, n)
-
 
 if __name__ == "__main__":
     main()
