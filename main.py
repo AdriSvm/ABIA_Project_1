@@ -325,7 +325,6 @@ class StateRepresentation(object):
                         clients_power(cl, self.dict, self.clients, self.centrals, i):
                     minim = d
                     c = i
-
             yield InsertClient(cl, c)
         '''
         # Move client
@@ -384,21 +383,45 @@ class StateRepresentation(object):
                 else:
                     yield SwapState(c, True)
 
-        '''
+
         # Echange clients
-        for central in self.dict:
-            for client in self.dict[central]:
-                for sec_central in self.dict:
-                    if sec_central != central:
-                        for sec_client in self.dict[sec_central]:
-                            if sec_client != client:
-                                pl1 = power_left(sec_central, self.dict, self.clients, self.centrals)
-                                pl2 = power_left(central, self.dict, self.clients, self.centrals)
-                                if clients_power(client, self.dict, self.clients, self.centrals) < pl1 \
-                                        and clients_power(sec_client, self.dict, self.clients,
-                                                          self.centrals) < pl2 and pl1 > 0 and pl2 > 0:
+        if len(self.left) == 0:
+            for central in self.dict:
+                for client in self.dict[central]:
+                    for sec_central in self.dict:
+                        if sec_central != central:
+                            for sec_client in self.dict[sec_central]:
+                                better = False
+                                a1= VEnergia.loss(distance((self.clients[client].CoordX,self.clients[client].CoordY)
+                                                           ,(self.centrals[central].CoordX,self.centrals[central].CoordY)))
+                                a2= VEnergia.loss(distance((self.clients[client].CoordX,self.clients[client].CoordY)
+                                                           ,(self.centrals[sec_central].CoordX,self.centrals[sec_central].CoordY)))
+
+                                b1 = VEnergia.loss(distance((self.clients[sec_client].CoordX,self.clients[sec_client].CoordY)
+                                                           ,(self.centrals[sec_central].CoordX,self.centrals[sec_central].CoordY)))
+                                b2 = VEnergia.loss(distance((self.clients[sec_client].CoordX,self.clients[sec_client].CoordY)
+                                                           ,(self.centrals[central].CoordX,self.centrals[central].CoordY)))
+                                case1 = a2 < a1
+                                case2 = b2 < b1
+                                case3 = a2 < a1 and b2 >= b1
+                                case4 = b2 < b1 and a2 >= a1
+
+                                if case1 and not case3:
+                                    better = True
+                                    #print("case1,2")
+                                elif case2 and not case4:
+                                    better = True
+                                elif case3 and b2-b1 < a1-a2:
+                                    better = True
+                                    #print("case3")
+                                elif case4 and a2-a1 < b1-b2:
+                                    better = True
+                                    #print("case4")
+
+                                if sec_client != client and better:
                                     yield SwapClients(client, central, sec_client, sec_central)
-        '''
+
+
 
     def apply_action(self, action: Operators):
         """
@@ -473,7 +496,7 @@ class StateRepresentation(object):
 
         for cl in self.left:
             self.gains -= VEnergia.tarifa_cliente_penalizacion(self.clients[cl].Tipo) * self.clients[cl].Consumo
-        # print(self.gains)
+        print(self.gains)
         return self.gains
 
     def heuristic_p5(self, x: int = 0) -> float:
@@ -775,7 +798,7 @@ def experiment(algorithm: str, method: str, n_c: list[int], n_cl: int, propcl: l
 
 
 def main():
-    initial_state, n = experiment('HILL CLIMBING', 'PROBLEM 5', [5, 10, 25], 1000, [0.2, 0.3, 0.5], 0.75, 22, x=2000)
+    initial_state, n = experiment('HILL CLIMBING', 'ORDERED', [5, 10, 25], 1000, [0.2, 0.3, 0.5], 0.75, 1234)
     print(initial_state, n)
 
 if __name__ == "__main__":

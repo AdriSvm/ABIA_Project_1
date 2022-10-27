@@ -121,8 +121,8 @@ def exp4():
             c2 = round(c2)
             c3 = round(c3)
             print(f"Iteració de la llavor {seed} amb {c1 + c2 + c3} centrals amb una distribució {[c1, c2, c3]}")
-            timming, nothing = experiment('HILL CLIMBING', 'ONLY GRANTED', [c1, c2, c3], 1000, [0.2, 0.3, 0.5], 0.75,
-                                          seed, True, 10)
+            timming, nothing = experiment('HILL CLIMBING', 'ONLY GRANTED', [c1, c2, c3], 100, [0.2, 0.3, 0.5], 0.75,
+                                          seed, timming=True, n_iter=1)
             timming /= 10
             timmings.append(timming)
             print(timming)
@@ -133,8 +133,8 @@ def exp4():
     df["mean_time"] = timmings
     return df
 
-#d = exp4()
-
+d = exp4()
+d.to_csv("test_1.csv")
 
 def exp5():
     df = pd.DataFrame()

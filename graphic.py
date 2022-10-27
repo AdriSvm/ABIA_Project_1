@@ -16,7 +16,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.setupUi(self)
         self.pixelmap.setFixedHeight(500)
         self.pixelmap.setFixedWidth(500)
-        self.setFixedSize(900,700)
+        self.setFixedSize(900,800)
 
         self.btn_execute.clicked.connect(self.execute_experiment)
 
@@ -41,6 +41,9 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         xg = float(self.txt_clients_XG.text())
         mg = float(self.txt_clients_MG.text())
         g = float(self.txt_clients_G.text())
+        k = int(self.txt_k.text())
+        lamda = float(self.txt_lambda.text())
+        limit = int(self.txt_limit.text())
         propg = float(self.txt_propg.text())
         seed = int(self.txt_seed.text())
         gen = self.box_gen.currentText()
@@ -50,7 +53,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             gen = "ORDERED"
 
         method = self.box_method.currentText()
-        self.initial_state, self.n = experiment(method,gen,[c_a,c_b,c_c],n,[xg,mg,g],propg,seed,False)
+        self.initial_state, self.n = experiment(method,gen,[c_a,c_b,c_c],n,[xg,mg,g],propg,seed,k=k,lam=lamda,limit=limit,timming=False)
         self.lbl_executing.setText("Executed")
         self.txt_bens.setText(f"Beneficis inicials: {self.initial_state.heuristic()}\n"
                               f"Beneficis finals: {self.n.heuristic()} \nClients no insertats: {len([_ for _ in self.n.left])} \n")
@@ -64,6 +67,9 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         xg = float(self.txt_clients_XG.text())
         mg = float(self.txt_clients_MG.text())
         g = float(self.txt_clients_G.text())
+        k = int(self.txt_k.text())
+        lamda = float(self.txt_lambda.text())
+        limit = int(self.txt_limit.text())
         propg = float(self.txt_propg.text())
         seed = int(self.txt_seed.text())
         gen = self.box_gen.currentText()
@@ -73,8 +79,8 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             gen = "ORDERED"
 
         method = self.box_method.currentText()
-        self.initial_state, self.n = experiment(method, gen, [c_a, c_b, c_c], n, [xg, mg, g], propg, seed, True,1)
-        self.lbl_timing.setText(str(self.initial_state)[:5] + "s")
+        time, nothing = experiment(method, gen, [c_a, c_b, c_c], n, [xg, mg, g], propg, seed=seed,k=k,lam=lamda,limit=limit,timming=True,n_iter=1)
+        self.lbl_timing.setText(str(time)[:5] + "s")
         self.lbl_executing.clear()
 
 
