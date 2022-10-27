@@ -384,7 +384,7 @@ class StateRepresentation(object):
                     yield SwapState(c, True)
 
 
-        # Echange clients
+        # Exchange clients
         if len(self.left) == 0:
             for central in self.dict:
                 for client in self.dict[central]:
