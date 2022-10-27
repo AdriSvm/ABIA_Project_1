@@ -278,6 +278,46 @@ class StateRepresentation(object):
                 if not self.states[c]:
                     swap_state_comb.add((c, True))
 
+        '''
+                # Exchange clients
+                if len(self.left) == 0:
+                    a = random.randint(0,39)
+                    central = a
+                    for client in self.dict[central]:
+                        a1 = distance((self.clients[client].CoordX, self.clients[client].CoordY),
+                                      (self.centrals[central].CoordX, self.centrals[central].CoordY))
+                        for sec_central in self.dict:
+                            if sec_central != central:
+                                a2 = distance((self.clients[client].CoordX, self.clients[client].CoordY),
+                                              (self.centrals[sec_central].CoordX, self.centrals[sec_central].CoordY))
+                                for sec_client in self.dict[sec_central]:
+                                    if sec_client != client:
+                                        better = False
+
+                                        b1 = distance((self.clients[sec_client].CoordX,self.clients[sec_client].CoordY),(self.centrals[sec_central].CoordX,self.centrals[sec_central].CoordY))
+                                        b2 = distance((self.clients[sec_client].CoordX,self.clients[sec_client].CoordY),(self.centrals[central].CoordX,self.centrals[central].CoordY))
+                                        case1 = a2 < a1
+                                        case2 = b2 < b1
+                                        case3 = a2 < a1 and b2 >= b1
+                                        case4 = b2 < b1 and a2 >= a1
+
+                                        if case1 and not case3:
+                                            better = True
+                                            #print("case1,2")
+                                        elif case2 and not case4:
+                                            better = True
+                                        elif case3 and b2-b1 < a1-a2:
+                                            better = True
+                                            #print("case3")
+                                        elif case4 and a2-a1 < b1-b2:
+                                            better = True
+                                            #print("case4")
+
+                                        if better:
+                                            yield SwapClients(client, central, sec_client, sec_central)
+                '''
+
+
         s = len(swap_state_comb)
         i = len(intro_cl_comb)
 
@@ -289,6 +329,8 @@ class StateRepresentation(object):
         else:
             combination = random.choice(list(swap_state_comb))
             yield SwapState(combination[0], combination[1])
+
+
 
     def generate_actions(self):
         """
@@ -383,24 +425,24 @@ class StateRepresentation(object):
                 else:
                     yield SwapState(c, True)
 
-
+        '''
         # Exchange clients
         if len(self.left) == 0:
-            for central in self.dict:
-                for client in self.dict[central]:
-                    for sec_central in self.dict:
-                        if sec_central != central:
-                            for sec_client in self.dict[sec_central]:
+            a = random.randint(0,39)
+            central = a
+            for client in self.dict[central]:
+                a1 = distance((self.clients[client].CoordX, self.clients[client].CoordY),
+                              (self.centrals[central].CoordX, self.centrals[central].CoordY))
+                for sec_central in self.dict:
+                    if sec_central != central:
+                        a2 = distance((self.clients[client].CoordX, self.clients[client].CoordY),
+                                      (self.centrals[sec_central].CoordX, self.centrals[sec_central].CoordY))
+                        for sec_client in self.dict[sec_central]:
+                            if sec_client != client:
                                 better = False
-                                a1= VEnergia.loss(distance((self.clients[client].CoordX,self.clients[client].CoordY)
-                                                           ,(self.centrals[central].CoordX,self.centrals[central].CoordY)))
-                                a2= VEnergia.loss(distance((self.clients[client].CoordX,self.clients[client].CoordY)
-                                                           ,(self.centrals[sec_central].CoordX,self.centrals[sec_central].CoordY)))
 
-                                b1 = VEnergia.loss(distance((self.clients[sec_client].CoordX,self.clients[sec_client].CoordY)
-                                                           ,(self.centrals[sec_central].CoordX,self.centrals[sec_central].CoordY)))
-                                b2 = VEnergia.loss(distance((self.clients[sec_client].CoordX,self.clients[sec_client].CoordY)
-                                                           ,(self.centrals[central].CoordX,self.centrals[central].CoordY)))
+                                b1 = distance((self.clients[sec_client].CoordX,self.clients[sec_client].CoordY),(self.centrals[sec_central].CoordX,self.centrals[sec_central].CoordY))
+                                b2 = distance((self.clients[sec_client].CoordX,self.clients[sec_client].CoordY),(self.centrals[central].CoordX,self.centrals[central].CoordY))
                                 case1 = a2 < a1
                                 case2 = b2 < b1
                                 case3 = a2 < a1 and b2 >= b1
@@ -418,9 +460,9 @@ class StateRepresentation(object):
                                     better = True
                                     #print("case4")
 
-                                if sec_client != client and better:
+                                if better:
                                     yield SwapClients(client, central, sec_client, sec_central)
-
+        '''
 
 
     def apply_action(self, action: Operators):
@@ -798,7 +840,7 @@ def experiment(algorithm: str, method: str, n_c: list[int], n_cl: int, propcl: l
 
 
 def main():
-    initial_state, n = experiment('HILL CLIMBING', 'ORDERED', [5, 10, 25], 1000, [0.2, 0.3, 0.5], 0.75, 1234)
+    initial_state, n = experiment('HILL CLIMBING', 'ORDERED', [5, 10, 25], 1000, [0.2, 0.3, 0.5], 0.75, 1234,timming=True,n_iter=1)
     print(initial_state, n)
 
 if __name__ == "__main__":
