@@ -246,8 +246,8 @@ TIPO = [0, 1, 2]
 TIPOCL = [0, 1, 2]
 TIPOCNT = [0, 1]
 
-centrales = Centrales([5, 10, 25], 42)
-clientes = Clientes(1000, [0.2, 0.3, 0.5], 0.5, 42)
+#centrales = Centrales([5, 10, 25], 42)
+#clientes = Clientes(1000, [0.2, 0.3, 0.5], 0.5, 42)
 #ganancia_0 = clientes[i].Consumo * VEnergia.tarifa_cliente_garantizada(CLIENTE_MG)
 
 #print(centrales[0], len(centrales))
